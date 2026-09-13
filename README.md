@@ -73,19 +73,19 @@ model list loads from the server itself.
 ### 2. Build the extension
 
 ```bash
-cd review-lens-source
+cd review-atlas
 npm install
 npm run build
 ```
 
-This compiles TypeScript and copies the output to `review-lens-extension/`.
+This compiles TypeScript and copies the output to `review-atlas-extension/`.
 
 ### 3. Load in Chrome
 
 1. Open `chrome://extensions`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked**
-4. Select the `review-lens-extension/` folder
+4. Select the `review-atlas-extension/` folder
 
 ---
 
@@ -130,22 +130,21 @@ Keys entered in settings are encrypted with AES-GCM-256 before being written to 
 ## Project Structure
 
 ```
-google-review-summary/
-├── review-lens-source/       # TypeScript source
-│   ├── src/
-│   │   ├── background.ts     # Service worker — filters reviews, calls AI APIs
-│   │   ├── content.ts        # Injected into Maps — scrapes & auto-scrolls reviews
-│   │   ├── popup.ts          # Popup UI logic
-│   │   ├── crypto.ts         # AES-GCM-256 API key encryption
-│   │   ├── config.ts         # Centralised constants and defaults
-│   │   └── types.ts          # Shared types & message contracts
-│   ├── popup.html            # Popup UI (dark theme)
-│   ├── fonts/                # Self-hosted Syne + DM Sans (variable woff2)
-│   ├── manifest.json         # Extension manifest (MV3)
-│   ├── build.js              # Post-compile copy script
-│   ├── tsconfig.json
-│   └── package.json
-└── review-lens-extension/    # Built extension — load this in Chrome
+review-atlas/
+├── src/
+│   ├── background.ts         # Service worker — filters reviews, calls AI APIs
+│   ├── content.ts            # Injected into Maps — scrapes & auto-scrolls reviews
+│   ├── popup.ts              # Popup UI logic
+│   ├── crypto.ts             # AES-GCM-256 API key encryption
+│   ├── config.ts             # Centralised constants and defaults
+│   └── types.ts              # Shared types & message contracts
+├── popup.html                # Popup UI (dark theme)
+├── fonts/                    # Self-hosted Syne + DM Sans (variable woff2)
+├── manifest.json             # Extension manifest (MV3)
+├── build.js                  # Post-compile copy script
+├── tsconfig.json
+├── package.json
+└── review-atlas-extension/   # Built extension (git-ignored) — load this in Chrome
 ```
 
 ---
@@ -153,7 +152,7 @@ google-review-summary/
 ## Development
 
 ```bash
-cd review-lens-source
+cd review-atlas
 
 # One-time build
 npm run build

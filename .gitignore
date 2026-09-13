@@ -6,5 +6,7 @@ dist/
 .DS_Store
 
 # Build artefacts
+review-atlas-extension/
+*.zip
 *.js.map
 *.tsbuildinfo

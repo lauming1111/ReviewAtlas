@@ -212,4 +212,4 @@ Certifications (all true for this extension):
    privacy URL loads over HTTPS.
 2. Replace the donation placeholders on the landing page, or delete that section.
 3. Update the landing page's install CTA to the store URL once the listing is live.
-4. Zip **the build output**, not the source: `cd review-lens-extension && zip -r ../greviewsumm-1.3.0.zip .`
+4. Zip **the build output**, not the source: `cd review-atlas-extension && zip -r ../greviewsumm-1.3.0.zip .`
