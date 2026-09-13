@@ -39,8 +39,10 @@ filesToClean.forEach(file => {
   }
 });
 
-// Copy everything from dist to the extension folder
-const extensionDir = path.join(__dirname, '..', 'review-lens-extension');
+// Copy everything from dist to the extension folder. It lives inside the repo
+// (git-ignored), not beside it: `..` dropped the build wherever the checkout's
+// parent happened to be, and every worktree overwrote the same folder.
+const extensionDir = path.join(__dirname, 'review-atlas-extension');
 // Create it rather than skipping: on a fresh clone this directory does not
 // exist, so the copy was silently skipped and `Load unpacked` had nothing to
 // point at — even though the README tells you to select exactly this folder.
@@ -53,7 +55,7 @@ if (!fs.existsSync(extensionDir)) fs.mkdirSync(extensionDir, { recursive: true }
     // nesting and threw ENOTSUP on any directory inside a directory.
     fs.cpSync(src, dest, { recursive: true });
   });
-  console.log('Copied files to review-lens-extension/');
+  console.log('Copied files to review-atlas-extension/');
 }
 
 console.log('Build complete!');
