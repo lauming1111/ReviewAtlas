@@ -9,6 +9,23 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Back button in Settings**, pinned to the top of the pane so it stays in reach while scrolling. Previously the only way out was Cancel at the very bottom
+- **↻ Refresh models** button beside each provider's model field, shown once Test connection succeeds. Every provider's picker now fills from the models the provider actually lists — the OpenAI, Gemini, Groq and Grok dropdowns were fixed four-model lists, and Claude had no suggestions at all. Embedding, speech, image and moderation models are left out, since none can write a summary
+
+### Fixed
+- **Every Ollama analysis failed with HTTP 403.** Chrome sends `Origin: chrome-extension://…` on the extension's requests to generate a summary, and Ollama refuses any origin it does not recognise — while Test connection, a GET sent without an Origin, kept reporting success. The extension now removes that header from its own requests to your local server (a session rule via the new `declarativeNetRequestWithHostAccess` permission, which adds no install warning). The rule matches only requests this extension makes, so websites calling your Ollama still carry their Origin and are still refused
+- **Reasoning models (deepseek-r1, qwen3…) never produced a summary on Ollama.** Ollama turns thinking on by default for them and it shares the output budget: on deepseek-r1:8b all 2048 tokens and 100 seconds went to reasoning, the answer came back empty, and each of the three retries repeated it. Requests now send `think: false`. Thinking that a self-hosted OpenAI-compatible server writes inline (`<think>…</think>`) is also stripped before the JSON is read
+- **The Ollama model field hid your installed models.** It was a text field with suggestions, and Chrome only suggests entries that match what the field already holds — so with the default `llama3.2:latest` in it and a different model installed, the list looked empty and Test connection seemed to do nothing. It is now a dropdown of the models installed on the server, loaded as soon as Settings opens; a stored model that is not installed is marked as such and replaced by one that is
+- **The Google Maps page reacted to buttons in the popup.** History's Back and Settings' Cancel re-queried the tab, and each query made the page switch to Overview and back. Back and Cancel now return to the screen you came from without touching the page
+- **The page was left on the Reviews tab** whenever the popup read place info from any tab other than Overview — the "switch back" step always clicked Reviews. It now returns to the tab you were on, and a place already seen is answered from memory with no tab switch at all
+- Finishing an analysis no longer pulls you out of History or Settings; Back takes you to the result
+- A model picked from a refreshed list is no longer lost on reopen — the dropdown blanked a value it had no option for, and the next save silently fell back to the default model
+- Claude's and Gemini's model lists were cut off at their API's default page size (20 and 50)
+- **The result screen showed the wrong Google rating — "5 / 5" for a 4.5-star place.** Analysis reads the rating on the Reviews tab, which has no place-name heading to anchor on, so the first star label on the page was taken: a histogram bar ("5 stars, 4,128 reviews"). Its count stood in for the place's total too, so a large scrape stopped at 4,128 reviews and History listed 4,128 instead of 5,967. With search results still listed beside the place, it took the first result's rating and count instead — often another place's. The rating is now read only from the open place's own panel, skipping histogram bars and links to other places, and an analysis reuses what the info screen already read for the place
+- The info screen's review count was blank when opened on Overview, and the histogram bar's count when opened on Reviews — Maps prints the count beside the stars rather than in their label, and only the label was read
+- **The place was named "Tartine Bakery - Google Maps", "Results" or "Search Results"** in the result screen, in History and in the prompt sent to the AI. The name was read from the page heading, which Maps renders only on Overview — so an analysis started on the Reviews tab fell back to the browser tab's title, and with search results still listed beside the place it took the list's own "Results" heading. On Google Search the page's first heading is a hidden "Search Results" label. The name now comes from the open place's own panel on every Maps tab, from the knowledge panel on Google Search, and from the search query when no place is open
+
 ---
 
 ## [1.3.0] — 2026-09-07

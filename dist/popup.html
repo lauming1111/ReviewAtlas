@@ -135,16 +135,6 @@
       .step.step-active .step-dot { animation: none; }
     }
 
-    .setup-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
-
-    .setup-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 17px;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 6px;
-    }
-
     /* Sentence case. Globally uppercasing every label made all 60+ controls
        shout equally, so nothing read as more important than anything else. */
     label {
@@ -290,15 +280,22 @@
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
 
-    /* ── API key fields ── */
-    .key-label-row {
+    /* ── API key and model label rows ── */
+    .key-label-row,
+    .model-label-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 6px;
     }
 
-    .key-label-row label { margin-bottom: 0; }
+    .key-label-row label,
+    .model-label-row label { margin-bottom: 0; }
+
+    /* No taller than the label beside it, so appearing after a successful
+       test does not shift the fields below. */
+    .refresh-models-btn { padding: 0 8px; line-height: 18px; }
+    .refresh-models-btn:disabled { cursor: progress; }
 
     .key-status {
       font-size: 10px;
@@ -772,6 +769,22 @@
 
     .history-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
 
+    /* Settings is one long scrolling pane: the subheader sticks so Back stays in
+       reach, bleeding over the screen padding so the cards scroll beneath it.
+       Sticky offsets count from inside the pane's 20px padding, hence -20px. */
+    .settings-subheader {
+      position: sticky;
+      top: -20px;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      margin: -20px -20px 16px;
+      padding: 12px 20px;
+      background: var(--bg);
+    }
+
+    .settings-subheader > .icon-btn { justify-self: start; }
+
     .history-list {
       padding: 12px 16px;
       display: flex;
@@ -923,8 +936,10 @@
 
   <!-- ── Settings screen ── -->
   <div class="screen settings-screen scroll-area" data-screen="settings" hidden>
-    <div class="setup-icon">⚙️</div>
-    <div class="setup-title">Settings</div>
+    <div class="history-subheader settings-subheader">
+      <button class="icon-btn" data-action="back-from-settings">← Back</button>
+      <span class="history-title">Settings</span>
+    </div>
 
     <!-- ═══ Card 1 — AI Provider ═══ -->
     <section class="settings-card">
@@ -963,11 +978,14 @@
 
       <!-- ── Ollama ── -->
       <div id="ollama-config">
-        <label for="ollama-model-input">Model name</label>
-        <input type="text" id="ollama-model-input" list="ollama-model-list"
-               placeholder="e.g. llama3.2:latest, mistral, phi4" />
-        <!-- Populated from the server's own /api/tags listing -->
-        <datalist id="ollama-model-list"></datalist>
+        <div class="model-label-row">
+          <label for="ollama-model-select">Model</label>
+          <button class="icon-btn refresh-models-btn" data-provider="ollama" hidden>↻ Refresh models</button>
+        </div>
+        <!-- A dropdown, not a free-text field: Ollama can only run a model that is
+             installed, and a datalist hid the installed models whenever the field
+             already held a name that matched none of them. Filled from /api/tags. -->
+        <select id="ollama-model-select"></select>
 
         <div class="test-row">
           <button class="test-conn-btn" data-provider="ollama">Test connection</button>
@@ -1030,7 +1048,10 @@
           <input type="password" id="openai-key-input" placeholder="sk-…" autocomplete="off" />
           <button class="clear-key-btn" id="openai-clear-key" data-provider="openai" hidden title="Remove saved key">✕</button>
         </div>
-        <label for="openai-model-select">Model</label>
+        <div class="model-label-row">
+          <label for="openai-model-select">Model</label>
+          <button class="icon-btn refresh-models-btn" data-provider="openai" hidden>↻ Refresh models</button>
+        </div>
         <select id="openai-model-select">
           <option value="gpt-4o-mini">gpt-4o-mini — fast &amp; affordable</option>
           <option value="gpt-4o">gpt-4o — most capable</option>
@@ -1053,9 +1074,14 @@
           <input type="password" id="anthropic-key-input" placeholder="sk-ant-…" autocomplete="off" />
           <button class="clear-key-btn" id="anthropic-clear-key" data-provider="anthropic" hidden title="Remove saved key">✕</button>
         </div>
-        <label for="anthropic-model-input">Model</label>
-        <input type="text" id="anthropic-model-input"
+        <div class="model-label-row">
+          <label for="anthropic-model-input">Model</label>
+          <button class="icon-btn refresh-models-btn" data-provider="anthropic" hidden>↻ Refresh models</button>
+        </div>
+        <input type="text" id="anthropic-model-input" list="anthropic-model-list"
                placeholder="e.g. claude-opus-4-5, claude-3-5-haiku-20241022" />
+        <!-- Populated from the provider's own /v1/models listing -->
+        <datalist id="anthropic-model-list"></datalist>
         <div class="test-row">
           <button class="test-conn-btn" data-provider="anthropic">Test connection</button>
           <span class="test-status" id="anthropic-test-status"></span>
@@ -1072,7 +1098,10 @@
           <input type="password" id="gemini-key-input" placeholder="AIza…" autocomplete="off" />
           <button class="clear-key-btn" id="gemini-clear-key" data-provider="gemini" hidden title="Remove saved key">✕</button>
         </div>
-        <label for="gemini-model-select">Model</label>
+        <div class="model-label-row">
+          <label for="gemini-model-select">Model</label>
+          <button class="icon-btn refresh-models-btn" data-provider="gemini" hidden>↻ Refresh models</button>
+        </div>
         <select id="gemini-model-select">
           <option value="gemini-2.0-flash">gemini-2.0-flash — fast &amp; free tier</option>
           <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite — lightest</option>
@@ -1095,7 +1124,10 @@
           <input type="password" id="groq-key-input" placeholder="gsk_…" autocomplete="off" />
           <button class="clear-key-btn" id="groq-clear-key" data-provider="groq" hidden title="Remove saved key">✕</button>
         </div>
-        <label for="groq-model-select">Model</label>
+        <div class="model-label-row">
+          <label for="groq-model-select">Model</label>
+          <button class="icon-btn refresh-models-btn" data-provider="groq" hidden>↻ Refresh models</button>
+        </div>
         <select id="groq-model-select">
           <option value="llama-3.3-70b-versatile">Llama 3.3 70B — versatile</option>
           <option value="llama-3.1-8b-instant">Llama 3.1 8B — fastest</option>
@@ -1118,7 +1150,10 @@
           <input type="password" id="xai-key-input" placeholder="xai-…" autocomplete="off" />
           <button class="clear-key-btn" id="xai-clear-key" data-provider="xai" hidden title="Remove saved key">✕</button>
         </div>
-        <label for="xai-model-select">Model</label>
+        <div class="model-label-row">
+          <label for="xai-model-select">Model</label>
+          <button class="icon-btn refresh-models-btn" data-provider="xai" hidden>↻ Refresh models</button>
+        </div>
         <select id="xai-model-select">
           <option value="grok-3-latest">grok-3 — flagship</option>
           <option value="grok-3-mini-latest">grok-3-mini — fast &amp; affordable</option>
@@ -1155,7 +1190,10 @@
         <label for="custom-endpoint-input">Base URL</label>
         <input type="text" id="custom-endpoint-input" placeholder="http://localhost:1234/v1" />
 
-        <label for="custom-model-input">Model name</label>
+        <div class="model-label-row">
+          <label for="custom-model-input">Model name</label>
+          <button class="icon-btn refresh-models-btn" data-provider="custom" hidden>↻ Refresh models</button>
+        </div>
         <input type="text" id="custom-model-input" list="custom-model-list" placeholder="model identifier" />
         <!-- Populated from the server's own /models listing -->
         <datalist id="custom-model-list"></datalist>

@@ -12,6 +12,42 @@ function isLocalProvider(settings) {
 function localParams(settings) {
     return (settings.aiProvider === 'custom' ? settings.customParams : settings.ollamaParams) ?? {};
 }
+/** One session rule per local provider, so switching providers never strands a stale one. */
+const ORIGIN_RULE_IDS = { ollama: 1, custom: 2 };
+/**
+ * Chrome stamps `Origin: chrome-extension://<id>` on this extension's POSTs, and
+ * Ollama answers an origin it does not recognise with a bare 403 — so every
+ * Ollama analysis failed, while Test connection (a GET, which carries no Origin)
+ * reported success. Strip the header from this extension's own requests to the
+ * local server. The rule matches only requests this extension initiates: a web
+ * page calling the same server keeps its Origin and is still refused.
+ */
+async function allowLocalServer(settings) {
+    const provider = (settings.aiProvider ?? 'ollama');
+    const endpoint = provider === 'custom' ? settings.customEndpoint : ollamaBase(settings);
+    if (!endpoint)
+        return;
+    const id = ORIGIN_RULE_IDS[provider];
+    try {
+        await chrome.declarativeNetRequest.updateSessionRules({
+            removeRuleIds: [id],
+            addRules: [{
+                    id,
+                    priority: 1,
+                    action: { type: 'modifyHeaders', requestHeaders: [{ header: 'origin', operation: 'remove' }] },
+                    condition: {
+                        urlFilter: `|${new URL(endpoint).origin}/`,
+                        initiatorDomains: [chrome.runtime.id],
+                        resourceTypes: ['xmlhttprequest', 'other'],
+                    },
+                }],
+        });
+    }
+    catch (err) {
+        // Not fatal — the request still goes out, and a refusal surfaces as its own error.
+        console.warn('[GReviewSumm] Could not install the local-server Origin rule:', err);
+    }
+}
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -249,7 +285,11 @@ ${languageRule(settings.outputLanguage)}
 }
 /** Parses the MODEL's JSON output. A SyntaxError here is retryable. */
 function parseAIResponse(raw) {
-    const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const cleaned = raw
+        // Reasoning models served over the OpenAI-compatible API (LM Studio, llama.cpp…)
+        // put their thinking inline, ahead of the JSON.
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     return JSON.parse(cleaned);
 }
 /**
@@ -392,9 +432,20 @@ const callOllama = async (prompt, settings) => {
     const response = await fetchWithTimeout(`${ollamaBase(settings)}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, prompt, stream: false, options }),
+        // think: false. Ollama switches thinking ON by default for reasoning models
+        // (deepseek-r1, qwen3, …), and the reasoning comes out of the same output
+        // budget: measured on deepseek-r1:8b, all 2048 tokens and 100 s went to
+        // thinking, the response came back empty, and every retry did the same.
+        // Only think: true is an error for a model without thinking.
+        body: JSON.stringify({ model, prompt, stream: false, think: false, options }),
     });
     if (!response.ok) {
+        // allowLocalServer should make this impossible; when it happens the rule is
+        // missing, and the bare 403 Ollama sends explains nothing.
+        if (response.status === 403) {
+            throw new Error('Ollama refused the request (HTTP 403). Reload the extension at chrome://extensions, ' +
+                'or add chrome-extension://* to the OLLAMA_ORIGINS setting of your Ollama server.');
+        }
         throw new Error(`Ollama API error ${response.status}: ${await response.text()}`);
     }
     const data = await readJsonBody(response, 'Ollama');
@@ -532,14 +583,16 @@ async function testConnection(settings) {
         case 'anthropic':
             if (!settings.anthropicApiKey)
                 return { ok: false, message: 'No API key set.' };
-            url = 'https://api.anthropic.com/v1/models';
+            // Paginated at 20 per page by default, which would truncate the picker.
+            url = 'https://api.anthropic.com/v1/models?limit=1000';
             headers['x-api-key'] = settings.anthropicApiKey;
             headers['anthropic-version'] = '2023-06-01';
             break;
         case 'gemini':
             if (!settings.geminiApiKey)
                 return { ok: false, message: 'No API key set.' };
-            url = `https://generativelanguage.googleapis.com/v1beta/models?key=${settings.geminiApiKey}`;
+            // 50 per page by default — fewer than Google lists.
+            url = `https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&key=${settings.geminiApiKey}`;
             break;
         case 'custom':
             if (!settings.customEndpoint)
@@ -584,12 +637,22 @@ async function testConnection(settings) {
         models,
     };
 }
+/**
+ * Model families that cannot answer a chat request. The list now feeds every
+ * provider's picker, and choosing one of these would only fail at analysis time.
+ */
+const NON_CHAT_MODEL = /(?:^|[-_./:])(?:embed|whisper|tts|transcribe|dall-e|moderation|image|audio|realtime|rerank|guard|davinci|babbage)/i;
 /** Each provider reports its model list under a different shape. */
 function extractModelNames(provider, data) {
     const names = provider === 'ollama' ? (data?.models ?? []).map((m) => m?.name) :
-        provider === 'gemini' ? (data?.models ?? []).map((m) => m?.name?.replace(/^models\//, '')) :
+        provider === 'gemini' ? (data?.models ?? [])
+            // Gemini states what each model supports — embedding models lack generateContent.
+            .filter((m) => !m?.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent'))
+            .map((m) => m?.name?.replace(/^models\//, '')) :
             (data?.data ?? []).map((m) => m?.id);
-    return names.filter((n) => typeof n === 'string' && n.length > 0).sort();
+    return names
+        .filter((n) => typeof n === 'string' && n.length > 0 && !NON_CHAT_MODEL.test(n))
+        .sort();
 }
 // ─── Retry helper ─────────────────────────────────────────────────────────────
 /**
@@ -627,6 +690,8 @@ async function summarize(reviews, placeName, settings, googleRating, googleRevie
     const selected = selectReviewsForPrompt(filtered, settings);
     const avgRating = computeAvg(filtered, googleRating);
     const prompt = buildPrompt(selected, placeName, filtered.length, settings);
+    if (isLocalProvider(settings))
+        await allowLocalServer(settings);
     if (provider === 'ollama')
         await checkOllama(settings);
     console.log(`[GReviewSumm] ${provider} · depth=${settings.analysisDepth ?? AI_DEFAULTS.ANALYSIS_DEPTH} · ` +

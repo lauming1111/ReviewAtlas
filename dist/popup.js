@@ -4,10 +4,55 @@ import { encryptApiKey, decryptApiKey } from './crypto.js';
 function $(selector) {
     return document.querySelector(selector);
 }
+let currentScreen = 'info';
 function setScreen(name) {
+    currentScreen = name;
     document.querySelectorAll('.screen').forEach((el) => {
         el.hidden = el.dataset.screen !== name;
     });
+}
+// ─── Navigation ───────────────────────────────────────────────────────────────
+//
+// History and Settings open over whatever the popup was showing, and Back or
+// Cancel restores exactly that screen. Both used to re-run showInfoScreen,
+// whose GET_BASIC_INFO can make the content script switch the Maps page to its
+// Overview tab and back — so the page visibly reacted to a button in the popup.
+/** Screen to restore when the open overlay closes; null while none is open. */
+let overlayReturn = null;
+/** The current tab's summary — re-rendered when a history entry reused the result screen. */
+let homeResult = null;
+function openOverlay(name) {
+    if (overlayReturn === null)
+        overlayReturn = currentScreen;
+    setScreen(name);
+}
+function closeOverlay() {
+    const target = overlayReturn ?? 'info';
+    overlayReturn = null;
+    if (target === 'result' && homeResult)
+        renderResult(homeResult.result, homeResult.timestamp);
+    setScreen(target);
+}
+/**
+ * Show a screen the popup reached on its own (initial load, a finished or
+ * failed analysis). While an overlay is open it becomes the screen Back returns
+ * to, rather than pulling the user out of History or Settings mid-edit.
+ */
+function showHomeScreen(name) {
+    if (overlayReturn !== null)
+        overlayReturn = name;
+    else
+        setScreen(name);
+}
+function showHomeResult(entry) {
+    homeResult = entry;
+    stopAllStepTimers();
+    if (overlayReturn !== null) {
+        overlayReturn = 'result';
+        return;
+    }
+    renderResult(entry.result, entry.timestamp);
+    setScreen('result');
 }
 // ─── Settings ─────────────────────────────────────────────────────────────────
 // Every model default comes from AI_DEFAULTS — previously ollamaModel and
@@ -180,6 +225,19 @@ function readParamsFromUI(prefix) {
     };
 }
 // ─── Apply / read settings ────────────────────────────────────────────────────
+/**
+ * Select a stored model, adding it as an option first when the curated list
+ * lacks it (one picked from a refreshed model list). A <select> otherwise
+ * blanks the value, and the next save would quietly fall back to the default.
+ */
+function setModelSelect(id, model) {
+    const select = document.querySelector(`#${id}`);
+    if (!select)
+        return;
+    if (!Array.from(select.options).some((o) => o.value === model))
+        select.add(new Option(model, model));
+    select.value = model;
+}
 function applySettingsToUI(settings) {
     _loadedSettings = { ...settings };
     // Review scope buttons
@@ -206,30 +264,20 @@ function applySettingsToUI(settings) {
     });
     updateProviderVisibility(settings.aiProvider ?? 'ollama');
     // ── Ollama ──────────────────────────────────────────────────────────────────
-    const ollamaModelEl = document.querySelector('#ollama-model-input');
-    if (ollamaModelEl)
-        ollamaModelEl.value = settings.ollamaModel ?? DEFAULT_SETTINGS.ollamaModel ?? '';
+    setModelSelect('ollama-model-select', settings.ollamaModel ?? DEFAULT_SETTINGS.ollamaModel ?? AI_DEFAULTS.OLLAMA_MODEL);
     applyParamsToUI('ollama', settings.ollamaParams);
     applyParamsToUI('custom', settings.customParams);
     const extraEl = document.querySelector('#custom-extra-params');
     if (extraEl)
         extraEl.checked = settings.customSendExtraParams !== false;
     // ── Model selects / inputs (non-key) ────────────────────────────────────────
-    const openaiModelEl = document.querySelector('#openai-model-select');
-    if (openaiModelEl)
-        openaiModelEl.value = settings.openaiModel ?? DEFAULT_SETTINGS.openaiModel ?? 'gpt-4o-mini';
+    setModelSelect('openai-model-select', settings.openaiModel ?? DEFAULT_SETTINGS.openaiModel ?? 'gpt-4o-mini');
     const anthropicModelEl = document.querySelector('#anthropic-model-input');
     if (anthropicModelEl)
         anthropicModelEl.value = settings.anthropicModel ?? DEFAULT_SETTINGS.anthropicModel ?? '';
-    const geminiModelEl = document.querySelector('#gemini-model-select');
-    if (geminiModelEl)
-        geminiModelEl.value = settings.geminiModel ?? DEFAULT_SETTINGS.geminiModel ?? 'gemini-2.0-flash';
-    const groqModelEl = document.querySelector('#groq-model-select');
-    if (groqModelEl)
-        groqModelEl.value = settings.groqModel ?? DEFAULT_SETTINGS.groqModel ?? 'llama-3.3-70b-versatile';
-    const xaiModelEl = document.querySelector('#xai-model-select');
-    if (xaiModelEl)
-        xaiModelEl.value = settings.xaiModel ?? DEFAULT_SETTINGS.xaiModel ?? 'grok-3-mini-latest';
+    setModelSelect('gemini-model-select', settings.geminiModel ?? DEFAULT_SETTINGS.geminiModel ?? 'gemini-2.0-flash');
+    setModelSelect('groq-model-select', settings.groqModel ?? DEFAULT_SETTINGS.groqModel ?? 'llama-3.3-70b-versatile');
+    setModelSelect('xai-model-select', settings.xaiModel ?? DEFAULT_SETTINGS.xaiModel ?? 'grok-3-mini-latest');
     const customEndpointEl = document.querySelector('#custom-endpoint-input');
     if (customEndpointEl)
         customEndpointEl.value = settings.customEndpoint ?? '';
@@ -248,7 +296,7 @@ function readSettingsFromUI() {
     const activeScope = document.querySelector('#review-mode-group .scope-btn.active');
     const activeProvider = document.querySelector('#ai-provider-group .scope-btn.active');
     const countInput = document.querySelector('#review-count-input');
-    const ollamaModelEl = document.querySelector('#ollama-model-input');
+    const ollamaModelEl = document.querySelector('#ollama-model-select');
     const openaiModelEl = document.querySelector('#openai-model-select');
     const anthropicModelEl = document.querySelector('#anthropic-model-input');
     const geminiModelEl = document.querySelector('#gemini-model-select');
@@ -325,10 +373,29 @@ function setTestStatus(provider, text, state) {
     el.className = `test-status${state === 'idle' ? '' : ` test-${state}`}`;
 }
 /**
- * Fill a provider's model datalist from the models its server actually reports.
- * Works for any local server exposing /models — not just Ollama.
+ * Fill a provider's model picker from the models it actually reports. A text
+ * field gets them as datalist suggestions; a curated <select> is rebuilt from
+ * the live list, so models released after this build become selectable.
  */
 function renderModelOptions(provider, models) {
+    const select = document.querySelector(`select#${provider}-model-select`);
+    if (select) {
+        // Curated labels survive for models the list already had, and the current
+        // choice is kept even if the provider no longer lists it — a <select>
+        // silently blanks a value it has no option for. That leftover is labelled,
+        // so it is not mistaken for a model the provider offers.
+        const labels = new Map(Array.from(select.options).filter((o) => !o.dataset.unlisted).map((o) => [o.value, o.text]));
+        const current = select.value;
+        const options = models.map((m) => new Option(labels.get(m) ?? m, m));
+        if (current && !models.includes(current)) {
+            const leftover = new Option(`${current} (${provider === 'ollama' ? 'not installed' : 'not listed'})`, current);
+            leftover.dataset.unlisted = 'true';
+            options.unshift(leftover);
+        }
+        select.replaceChildren(...options);
+        select.value = current;
+        return;
+    }
     const list = document.getElementById(`${provider}-model-list`);
     if (!list)
         return;
@@ -336,34 +403,72 @@ function renderModelOptions(provider, models) {
         .map((m) => `<option value="${m.replace(/"/g, '&quot;')}"></option>`)
         .join('');
 }
-/**
- * Validate the current provider's credentials/endpoint without running a scrape.
- * The same round-trip returns the provider's model list, which populates the
- * Ollama picker.
- */
-async function runConnectionTest(provider) {
-    const settings = readSettingsFromUI();
-    setTestStatus(provider, 'Testing…', 'busy');
-    let response;
+/** One TEST_CONNECTION round-trip, with messaging failures folded into the result. */
+async function requestConnectionTest(settings) {
     try {
-        response = await sendRuntimeMessage({
+        const response = await sendRuntimeMessage({
             type: 'TEST_CONNECTION',
             payload: { settings },
         });
+        return response.type === 'CONNECTION_RESULT'
+            ? response.payload
+            : { ok: false, message: 'Unexpected response' };
     }
     catch (err) {
-        setTestStatus(provider, String(err), 'fail');
-        return;
+        return { ok: false, message: String(err) };
     }
-    if (response.type !== 'CONNECTION_RESULT') {
-        setTestStatus(provider, 'Unexpected response', 'fail');
+}
+/**
+ * Point the Ollama picker at an installed model when the chosen one is not. It
+ * could only fail with "model not found", and the default is rarely installed.
+ * A bare name matches its :latest tag. Returns the name switched away from.
+ */
+function selectInstalledOllamaModel(models) {
+    const select = document.querySelector('#ollama-model-select');
+    const current = select?.value ?? '';
+    if (!select || models.length === 0 || models.includes(current))
+        return undefined;
+    const tagged = models.find((m) => m === `${current}:latest`);
+    // Same model under its full name — drop the "not installed" leftover for it.
+    if (tagged)
+        select.querySelector('option[data-unlisted]')?.remove();
+    select.value = tagged ?? models[0];
+    return tagged || !current ? undefined : current;
+}
+/**
+ * Validate the current provider's credentials/endpoint without running a scrape.
+ * The same round-trip returns the provider's model list, which populates its
+ * model picker. 'refresh' re-runs it just to reload that list; 'auto' loads it
+ * quietly when Settings opens — no "Testing…" flash, and a server that is not
+ * running is only reported once the user asks.
+ */
+async function runConnectionTest(provider, mode = 'test') {
+    const settings = readSettingsFromUI();
+    const refreshBtn = document.querySelector(`.refresh-models-btn[data-provider="${provider}"]`);
+    if (mode !== 'auto')
+        setTestStatus(provider, mode === 'refresh' ? 'Refreshing model list…' : 'Testing…', 'busy');
+    if (refreshBtn)
+        refreshBtn.disabled = true;
+    const { ok, message, models } = await requestConnectionTest(settings);
+    if (refreshBtn)
+        refreshBtn.disabled = false;
+    if (!ok && mode === 'auto')
         return;
-    }
-    const { ok, message, models } = response.payload;
-    setTestStatus(provider, message, ok ? 'ok' : 'fail');
-    // Both local providers expose a model list; populate whichever was tested.
-    if (ok && models?.length)
+    // The list can only be reloaded from a server that just answered.
+    if (refreshBtn)
+        refreshBtn.hidden = !ok;
+    let status = ok && mode === 'refresh'
+        ? (models?.length ? `Model list updated · ${models.length} models` : 'Connected · no models reported')
+        : message;
+    if (ok && models?.length) {
         renderModelOptions(provider, models);
+        const missing = provider === 'ollama' ? selectInstalledOllamaModel(models) : undefined;
+        if (missing) {
+            const chosen = document.querySelector('#ollama-model-select')?.value;
+            status = `${status}. ${missing} isn't installed — switched to ${chosen}; Save to keep it.`;
+        }
+    }
+    setTestStatus(provider, status, ok ? 'ok' : 'fail');
 }
 /**
  * Restore every default EXCEPT the stored API keys. Keys are encrypted at rest
@@ -390,7 +495,11 @@ async function openSettings() {
     _clearKeys.clear(); // reset any pending clears from last session
     const settings = await getSettings();
     applySettingsToUI(settings);
-    setScreen('settings');
+    openOverlay('settings');
+    // A local Ollama answers instantly and for free, so show its installed models
+    // straight away instead of the stored name alone.
+    if ((settings.aiProvider ?? 'ollama') === 'ollama')
+        void runConnectionTest('ollama', 'auto');
 }
 const SUMMARY_CACHE_KEY = 'gReviewSummCache';
 const REVIEW_CACHE_KEY = 'gReviewSummReviewCache';
@@ -545,7 +654,7 @@ async function showHistory() {
         return;
     if (entries.length === 0) {
         list.innerHTML = '<p class="history-empty">No analyzed places yet.</p>';
-        setScreen('history');
+        openOverlay('history');
         return;
     }
     const sentimentColors = {
@@ -574,7 +683,7 @@ async function showHistory() {
         <button class="history-delete" data-key="${encodeURIComponent(key)}" title="Remove">✕</button>
       </div>`;
     }).join('');
-    setScreen('history');
+    openOverlay('history');
 }
 // ─── Messaging ────────────────────────────────────────────────────────────────
 function sendTabMessage(tabId, message) {
@@ -705,8 +814,6 @@ function renderResult(data, timestamp) {
         warnEl.textContent = data.dateParseWarning ?? '';
         warnEl.hidden = !data.dateParseWarning;
     }
-    stopAllStepTimers();
-    setScreen('result');
 }
 // ─── Cancellation ────────────────────────────────────────────────────────────
 let analysisCancelled = false;
@@ -720,7 +827,7 @@ async function cancelAnalysis() {
         }
     }
     catch { /* tab may have closed */ }
-    await showInfoScreen();
+    await showHome();
 }
 async function stopGathering() {
     stopProgressPoll();
@@ -832,12 +939,17 @@ function isSupportedPage(url) {
         return false;
     }
 }
+/**
+ * Load the current tab's place into the info screen, then show the home screen.
+ * Runs once per popup open: GET_BASIC_INFO can switch the page's tabs, so later
+ * navigation goes through showHome, which never messages the tab.
+ */
 async function showInfoScreen() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     currentTabUrl = tab.url ?? '';
     currentTabId = tab.id ?? 0;
     if (!isSupportedPage(currentTabUrl)) {
-        setScreen('wrong-page');
+        showHomeScreen('wrong-page');
         return;
     }
     if (!currentTabId) {
@@ -887,17 +999,27 @@ async function showInfoScreen() {
         if (nameEl)
             nameEl.textContent = 'Open a business on Google Maps';
     }
+    await showHome();
+}
+/** The current tab's cached summary if the settings have one, else the info screen. */
+async function showHome() {
+    if (!isSupportedPage(currentTabUrl)) {
+        showHomeScreen('wrong-page');
+        return;
+    }
     const settings = await getSettings();
     const cached = await getCachedResult(currentTabUrl, settings, currentPlaceName);
     if (cached) {
-        renderResult(cached.result, cached.timestamp);
+        showHomeResult(cached);
         return;
     }
-    setScreen('info');
+    showHomeScreen('info');
 }
 // ─── Analyze ──────────────────────────────────────────────────────────────────
 async function runAnalyze(forceFresh = false) {
     analysisCancelled = false;
+    // Always started by the user — including from Settings or a history entry.
+    overlayReturn = null;
     setScreen('loading');
     setLoadingStep(1);
     const settings = await getSettings();
@@ -926,7 +1048,10 @@ async function runAnalyze(forceFresh = false) {
         : await getCachedReviews(currentTabUrl, maxReviews, sortBy, currentPlaceName);
     if (cachedReviews) {
         console.log(`[GReviewSumm] Reusing ${cachedReviews.reviews.length} cached reviews — skipping scrape`);
-        ({ reviews, placeName, googleRating, googleReviewCount } = cachedReviews);
+        ({ reviews, googleRating, googleReviewCount } = cachedReviews);
+        // The page was read again when this popup opened; prefer that over the name
+        // stored with the cached review set, which may predate a scraper fix.
+        placeName = currentPlaceName || cachedReviews.placeName;
         setLoadingStep(2, `${reviews.length.toLocaleString()} reviews (cached)`);
     }
     else {
@@ -956,7 +1081,7 @@ async function runAnalyze(forceFresh = false) {
         if (analysisCancelled)
             return;
         if (reviewsResponse.type === 'NO_REVIEWS') {
-            setScreen('no-reviews');
+            showHomeScreen('no-reviews');
             return;
         }
         if (reviewsResponse.type === 'ERROR') {
@@ -1002,7 +1127,7 @@ async function runAnalyze(forceFresh = false) {
     if (summaryResponse.type === 'SUMMARY_RESULT') {
         const timestamp = Date.now();
         await setCachedResult(currentTabUrl, settings, summaryResponse.payload);
-        renderResult(summaryResponse.payload, timestamp);
+        showHomeResult({ result: summaryResponse.payload, timestamp });
     }
     else if (summaryResponse.type === 'ERROR') {
         showError(summaryResponse.payload);
@@ -1012,7 +1137,7 @@ function showError(message) {
     const errEl = $('[data-field="error-message"]');
     if (errEl)
         errEl.textContent = message;
-    setScreen('error');
+    showHomeScreen('error');
 }
 // ─── Event listeners ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1032,6 +1157,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('#ai-provider-group .scope-btn').forEach((b) => b.classList.remove('active'));
             btn.classList.add('active');
             updateProviderVisibility(btn.dataset.value);
+            if (btn.dataset.value === 'ollama')
+                void runConnectionTest('ollama', 'auto');
         });
     });
     // Analysis depth buttons — labels/hints sourced from ANALYSIS_DEPTHS so the
@@ -1051,15 +1178,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.classList.add('active');
         });
     });
-    // Test connection — one button per provider panel
-    document.querySelectorAll('.test-conn-btn').forEach((btn) => {
+    // Test connection — one button per provider panel — and the model-list
+    // refresh that appears once a test succeeds. Both are the same round-trip.
+    document.querySelectorAll('.test-conn-btn, .refresh-models-btn').forEach((btn) => {
         btn.addEventListener('click', async () => {
             const provider = btn.dataset.provider ?? '';
             if (provider === 'ollama' || provider === 'custom') {
                 const settings = readSettingsFromUI();
                 await ensureEndpointPermission(provider === 'ollama' ? settings.ollamaEndpoint : settings.customEndpoint);
             }
-            await runConnectionTest(provider);
+            await runConnectionTest(provider, btn.classList.contains('refresh-models-btn') ? 'refresh' : 'test');
         });
     });
     // Re-probe Ollama for its model list when the endpoint changes
@@ -1120,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     // History screen
     $('[data-action="open-history"]')?.addEventListener('click', () => showHistory());
-    $('[data-action="back-from-history"]')?.addEventListener('click', () => showInfoScreen());
+    $('[data-action="back-from-history"]')?.addEventListener('click', () => closeOverlay());
     document.getElementById('clear-history-btn')?.addEventListener('click', async () => {
         await clearAllHistory();
         showHistory();
@@ -1139,8 +1267,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const key = decodeURIComponent(item.dataset.key ?? '');
             const entries = await getAllCacheEntries();
             const found = entries.find((e) => e.key === key);
-            if (found)
+            // Still inside the History overlay: leaving it restores the current
+            // tab's own screen, re-rendering its result over this entry.
+            if (found) {
                 renderResult(found.entry.result, found.entry.timestamp);
+                setScreen('result');
+            }
         }
     });
     // Info screen
@@ -1162,9 +1294,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const newSettings = readSettingsFromUI();
         await ensureSettingsPermissions(newSettings);
         await saveSettings(newSettings);
-        await showInfoScreen();
+        // A running analysis carries on. Otherwise the new settings may select a
+        // different cached summary, so re-pick the home screen — without the tab.
+        if (overlayReturn === 'loading') {
+            closeOverlay();
+            return;
+        }
+        overlayReturn = null;
+        await showHome();
     });
-    $('[data-action="cancel-settings"]')?.addEventListener('click', () => showInfoScreen());
+    // Back and Cancel both discard unsaved edits and return where the user was.
+    document.querySelectorAll('[data-action="cancel-settings"], [data-action="back-from-settings"]')
+        .forEach((btn) => btn.addEventListener('click', () => closeOverlay()));
     // Loading controls
     document.getElementById('summarize-now-btn')?.addEventListener('click', () => stopGathering());
     document.getElementById('cancel-btn')?.addEventListener('click', () => cancelAnalysis());
@@ -1176,6 +1317,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('[data-action="retry"]').forEach((btn) => {
         btn.addEventListener('click', () => runAnalyze());
     });
-    $('[data-action="back"]')?.addEventListener('click', () => showInfoScreen());
     await showInfoScreen();
 });

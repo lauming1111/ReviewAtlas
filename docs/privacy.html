@@ -136,6 +136,7 @@
       <tr><td><code>storage</code></td><td>Your settings and the local cache</td></tr>
       <tr><td><code>google.com</code>, <code>maps.google.com</code></td><td>The pages whose reviews are being summarized</td></tr>
       <tr><td><code>localhost</code>, <code>127.0.0.1</code></td><td>To reach a model running on your own machine</td></tr>
+      <tr><td><code>declarativeNetRequestWithHostAccess</code></td><td>To drop the Origin header from the extension's <strong>own</strong> requests to your local AI server, which Ollama otherwise refuses. Nothing else is modified, and requests from websites are untouched</td></tr>
       <tr><td>The five provider API hosts</td><td>Only the one you actually select is ever contacted</td></tr>
       <tr><td>Optional: all hosts</td><td>Requested <strong>only</strong> if you point the extension at a self-hosted server on some other address. The extension cannot know that address in advance, so the option must be broad — but nothing is requested at install, and when you do save such an endpoint it asks for that single address only.</td></tr>
     </tbody>
