@@ -115,6 +115,18 @@ so reopening a place is instant. All of it stays in local extension storage on
 the user's device. Nothing is transmitted to the developer.
 ```
 
+### `declarativeNetRequestWithHostAccess`
+
+```
+Used for one purpose: removing the Origin header from the extension's own requests
+to the AI server the user runs on their own machine (Ollama, or a self-hosted
+OpenAI-compatible server). Ollama rejects requests from browser-extension origins
+with HTTP 403, which made local models unusable. The single session rule matches
+only requests initiated by this extension and only the user's configured server
+address, so web pages keep their Origin header and the server's protection against
+websites is unchanged. No other request is modified, blocked or redirected.
+```
+
 ### Host permission — `https://www.google.com/*`, `https://maps.google.com/*`
 
 ```

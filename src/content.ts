@@ -190,10 +190,86 @@ function domDistance(from: Element, to: Element): number {
   return Infinity;
 }
 
+/** One bar of the review histogram — a star level's share, not the place's rating. */
+const HISTOGRAM_BAR_LABEL = /^\s*\d\s*stars?\s*,\s*[\d,]+\s*reviews?\s*$/i;
+
+/** A review count on its own, as Maps prints it beside the stars: "5,967 reviews". */
+const REVIEW_COUNT_TEXT = /^\(?\s*([\d,]+)\s*\)?\s*reviews?$/i;
+
+/** "Tartine Bakery - Google Maps" → "Tartine Bakery"; a bare "Google Maps" → "". */
+const TITLE_SUFFIX = /(?:^|[\s ]*[-–—|][\s ]*)Google\s+(?:Maps|Search)[\s ]*$/i;
+
+/**
+ * The Maps place panel: the [role="main"] region holding the place's Reviews
+ * tab. Every tab renders inside it, whereas the h1 exists only on Overview, and
+ * a search's results list — other places' ratings — is a separate [role="main"].
+ */
+function findPlacePanel(): Element | null {
+  const reviewsTab = Array.from(document.querySelectorAll('[role="main"] [role="tab"]'))
+    .find((tab) => /^reviews\b/.test(tabLabel(tab)));
+  return reviewsTab?.closest('[role="main"]') ?? null;
+}
+
+/**
+ * The name of the place on screen.
+ *
+ * Maps renders the place's h1 on Overview only, so an analysis — which reads
+ * this on the Reviews tab — used to fall back to the browser tab's title
+ * ("Tartine Bakery - Google Maps"), or, with a search's results list open
+ * beside the place, to that list's own "Results" heading. On Google Search the
+ * first h1 is a hidden "Search Results" label. Hence: no page-wide h1 lookup,
+ * and the h1 lookups that remain are scoped to the place panel, so the name and
+ * the rating always describe the same place.
+ */
+function scrapePlaceName(): string {
+  const panel = findPlacePanel();
+  const clean = (text: string | null | undefined): string => text?.replace(/\s+/g, ' ').trim() ?? '';
+  return (
+    // Maps Overview — the only tab that renders a heading.
+    clean((panel ?? document).querySelector('h1.DUwDvf')?.textContent) ||
+    // Every other Maps tab: the panel itself is labelled with the place's name.
+    clean(panel?.getAttribute('aria-label')) ||
+    // Older Maps markup. Below the panel label because fontHeadlineLarge is a
+    // generic Maps type token, so other headings can carry it too.
+    clean((panel ?? document).querySelector('h1[class*="fontHeadlineLarge"]')?.textContent) ||
+    // Google Search knowledge panel. NOT scoped to #rhs: below ~600px wide the
+    // panel moves out of it, and #rhs stops existing entirely.
+    clean(document.querySelector('[data-attrid="title"]')?.textContent) ||
+    // No place open: the search query. On a place page without a panel (a place
+    // with no reviews, Maps' limited view) the title still names the place.
+    clean(document.title).replace(TITLE_SUFFIX, '').trim() ||
+    'This Place'
+  );
+}
+
+/**
+ * The review count printed beside a rating's stars, which Maps keeps out of the
+ * stars' own label: a separate "5,967 reviews" label in the Overview header, and
+ * plain "5,967 reviews" text under the big rating on the Reviews tab. Looks only
+ * two levels up, so it cannot reach another block's count.
+ */
+function findNearbyReviewCount(stars: Element): number | null {
+  let container = stars.parentElement;
+  for (let level = 0; container && level < 2; level++, container = container.parentElement) {
+    for (const el of Array.from(container.querySelectorAll('*'))) {
+      const match =
+        el.getAttribute('aria-label')?.trim().match(REVIEW_COUNT_TEXT) ??
+        (el.childElementCount === 0 ? el.textContent?.trim().match(REVIEW_COUNT_TEXT) : null);
+      if (match) return parseInt(match[1].replace(/,/g, ''), 10);
+    }
+  }
+  return null;
+}
+
 function scrapeGoogleAggregateRating(): { googleRating: number | null; googleReviewCount: number | null } {
+  const panel = findPlacePanel();
+
   function tryParseEl(el: Element): { googleRating: number; googleReviewCount: number | null } | null {
     if (el.closest(REVIEW_CARD_SELECTOR)) return null;
     const label = el.getAttribute('aria-label') ?? '';
+    if (HISTOGRAM_BAR_LABEL.test(label) || el.closest('table')) return null;
+    // Inside the place panel, links lead elsewhere: "People also search for", sponsored cards.
+    if (panel && el.closest('a[href], [role="link"]')) return null;
     // Match X.X before "stars", "out of 5", after "rated", or "X/5" format
     const ratingMatch =
       label.match(/(\d+(?:\.\d+)?)\s*(?:stars?\s*(?:out\s*of)?|out\s*of)/i) ??
@@ -210,20 +286,22 @@ function scrapeGoogleAggregateRating(): { googleRating: number | null; googleRev
   }
 
   // The Google Maps page has many star elements:
-  //  • search-results sidebar entries  — rendered BEFORE the place-detail h1
-  //  • the current place's rating chip — rendered just AFTER the h1
-  //  • "Reviews from the web" section  — rendered later, after the rating chip
-  //  • review histogram bars           — inside the reviews section
+  //  • search-results list entries      — a separate [role="main"] beside the place panel
+  //  • the place's rating chip          — just after the h1, on Overview only
+  //  • the review summary               — big "4.5" over "5,967 reviews", on Overview and Reviews
+  //  • review histogram bars            — "5 stars, 4,128 reviews", beside the summary
+  //  • "People also search for" entries — links to other places, late in Overview
   //
   // Strategy:
-  //  1. Find all candidates page-wide.
-  //  2. Prefer elements that appear AFTER h1 in document order (sidebar is before h1).
-  //  3. Among those, take the one with the smallest DOM distance to h1
-  //     (rating chip is 3–8 edges; web-reviews section is much further).
+  //  1. With a place open, search only its panel and take the first rating in
+  //     document order: the chip on Overview, the summary on Reviews. The h1
+  //     cannot anchor this — Reviews and About render none, and the page's first
+  //     rating there was a histogram bar or another place's results-list entry.
+  //  2. Otherwise (no panel, e.g. Google Search), prefer elements AFTER the h1
+  //     and take the one with the smallest DOM distance to it.
+  //  3. When the chosen label carries no count, read the one printed beside it.
 
-  const h1 = document.querySelector('h1.DUwDvf, h1[class*="fontHeadlineLarge"], h1');
-
-  const allCandidates = Array.from(document.querySelectorAll(
+  const allCandidates = Array.from((panel ?? document).querySelectorAll(
     '[role="img"][aria-label],[aria-label*="star"],[aria-label*="out of 5"],[aria-label*="rated "],[aria-label*="/5"]'
   ));
 
@@ -234,19 +312,26 @@ function scrapeGoogleAggregateRating(): { googleRating: number | null; googleRev
   }
 
   if (allValid.length === 0) return { googleRating: null, googleReviewCount: null };
-  if (!h1) return allValid[0].result; // no anchor — fall back to first found
 
-  // Keep only elements that follow h1 in document order; fall back to all if none.
-  const FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
-  const afterH1 = allValid.filter(({ el }) => !!(h1.compareDocumentPosition(el) & FOLLOWING));
-  const pool = afterH1.length > 0 ? afterH1 : allValid;
+  let best = allValid[0]; // in the panel, or with no h1 to anchor on — first found
+  const h1 = panel ? null : document.querySelector('h1.DUwDvf, h1[class*="fontHeadlineLarge"], h1');
+  if (h1) {
+    // Keep only elements that follow h1 in document order; fall back to all if none.
+    const FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
+    const afterH1 = allValid.filter(({ el }) => !!(h1.compareDocumentPosition(el) & FOLLOWING));
+    const pool = afterH1.length > 0 ? afterH1 : allValid;
 
-  // Precompute each candidate's distance once — computing it inside the comparator
-  // re-walked the ancestor chain on every O(n log n) comparison.
-  const withDistance = pool.map((c) => ({ ...c, dist: domDistance(h1, c.el) }));
-  withDistance.sort((a, b) => a.dist - b.dist);
+    // Precompute each candidate's distance once — computing it inside the comparator
+    // re-walked the ancestor chain on every O(n log n) comparison.
+    const withDistance = pool.map((c) => ({ ...c, dist: domDistance(h1, c.el) }));
+    withDistance.sort((a, b) => a.dist - b.dist);
+    best = withDistance[0];
+  }
 
-  return withDistance[0].result;
+  return {
+    googleRating: best.result.googleRating,
+    googleReviewCount: best.result.googleReviewCount ?? findNearbyReviewCount(best.el),
+  };
 }
 
 function extractStarRating(el: Element): number {
@@ -324,30 +409,72 @@ function scrapeContactInfo(): { category?: string; address?: string; phone?: str
   return { category, address, phone };
 }
 
+/**
+ * What the Overview tab showed for a place, for this page's lifetime, so
+ * reopening the popup on a place already seen answers without switching the
+ * user's page to Overview again. Keyed by the place's URL slug and feature id,
+ * which are the same on the Overview, Reviews and About tabs — the h1 is not
+ * (only Overview renders it). The rating is kept too, so an analysis reports
+ * the same rating and review count the info screen showed.
+ */
+const overviewInfoCache = new Map<
+  string,
+  ReturnType<typeof scrapeContactInfo> & ReturnType<typeof scrapeGoogleAggregateRating>
+>();
+
+/** The overviewInfoCache key for the place in the URL, if the URL names one. */
+function placeCacheKey(): string | undefined {
+  const placeSlug = location.pathname.match(/\/place\/([^/]+)/)?.[1];
+  const featureId = location.href.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1];
+  return placeSlug && featureId ? `${placeSlug}|${featureId}` : undefined;
+}
+
+/**
+ * The place's aggregate rating for an analysis. What Overview showed wins when
+ * the popup has already read this place — it does on every open — so the result
+ * agrees with the info screen; the live scrape fills in whatever that lacks.
+ */
+function scrapePlaceAggregate(): ReturnType<typeof scrapeGoogleAggregateRating> {
+  const cacheKey = placeCacheKey();
+  const cached = cacheKey ? overviewInfoCache.get(cacheKey) : undefined;
+  const live = scrapeGoogleAggregateRating();
+  return {
+    googleRating: cached?.googleRating ?? live.googleRating,
+    googleReviewCount: cached?.googleReviewCount ?? live.googleReviewCount,
+  };
+}
+
+function tabLabel(tab: Element): string {
+  return tab.textContent?.trim().toLowerCase() ?? '';
+}
+
 async function scrapeBasicInfo(): Promise<{ placeName: string; googleRating?: number; googleReviewCount?: number; category?: string; address?: string; phone?: string }> {
-  let { googleRating, googleReviewCount } = scrapeGoogleAggregateRating();
+  const placeName = scrapePlaceName();
 
-  const placeNameEl =
-    document.querySelector('h1.DUwDvf') ??
-    document.querySelector('h1[class*="fontHeadlineLarge"]') ??
-    document.querySelector('h1');
+  const cacheKey = placeCacheKey();
+  const cached = cacheKey ? overviewInfoCache.get(cacheKey) : undefined;
 
-  let { category, address, phone } = scrapeContactInfo();
+  let { googleRating, googleReviewCount } = cached ?? scrapeGoogleAggregateRating();
+  let { category, address, phone } = cached ?? scrapeContactInfo();
 
-  // If contact info is missing we may be on the Reviews tab (Overview content not rendered).
-  // Temporarily switch to Overview, re-scrape, then switch back — invisible to the user.
-  if (!address && !phone && !category) {
-    const allTabs = Array.from(document.querySelectorAll<HTMLElement>('button[role="tab"], [role="tab"]'));
-    const overviewBtn = allTabs.find((btn) => {
-      const t = btn.textContent?.trim().toLowerCase() ?? '';
-      return t === 'overview' || t === 'info';
-    });
-    const reviewsBtn = allTabs.find((btn) => {
-      const t = btn.textContent?.trim().toLowerCase() ?? '';
-      return t === 'reviews' || t.startsWith('reviews ');
-    });
+  // If contact info is missing we may be on the Reviews or About tab (Overview
+  // content not rendered). Switch to Overview, re-scrape, then put the page back
+  // on the tab the user had. This used to click Reviews unconditionally, so a
+  // user on About — or any tab — was left on Reviews every time the popup asked.
+  if (!cached && !address && !phone && !category) {
+    const overviewBtn = Array.from(document.querySelectorAll<HTMLElement>('[role="tab"]'))
+      .find((tab) => tabLabel(tab) === 'overview' || tabLabel(tab) === 'info');
+    // Scoped to Overview's own tab strip: a Search page has other tablists
+    // whose selected tab must never be clicked.
+    const siblingTabs = Array.from(
+      (overviewBtn?.closest('[role="tablist"]') ?? overviewBtn?.parentElement)
+        ?.querySelectorAll<HTMLElement>('[role="tab"]') ?? []
+    );
+    const returnTo = siblingTabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
 
-    if (overviewBtn) {
+    // Only switch when there is a known tab to switch back to — otherwise the
+    // page would be stranded on Overview. Already on Overview: nothing to find.
+    if (overviewBtn && returnTo && returnTo !== overviewBtn) {
       overviewBtn.click();
       await sleep(700); // wait for Overview panel to render
       ({ category, address, phone } = scrapeContactInfo());
@@ -355,12 +482,18 @@ async function scrapeBasicInfo(): Promise<{ placeName: string; googleRating?: nu
       const overviewRating = scrapeGoogleAggregateRating();
       if (overviewRating.googleRating !== null) googleRating = overviewRating.googleRating;
       if (overviewRating.googleReviewCount !== null) googleReviewCount = overviewRating.googleReviewCount;
-      if (reviewsBtn) reviewsBtn.click(); // restore Reviews tab
+      returnTo.click();
     }
   }
 
+  // Contact info renders only on Overview, so finding any means this came from
+  // Overview. Nothing found is not cached — the panel may not have rendered yet.
+  if (cacheKey && !cached && (address || phone || category)) {
+    overviewInfoCache.set(cacheKey, { category, address, phone, googleRating, googleReviewCount });
+  }
+
   return {
-    placeName: placeNameEl?.textContent?.trim() ?? document.title ?? 'This Place',
+    placeName,
     ...(googleRating !== null && { googleRating }),
     ...(googleReviewCount !== null && { googleReviewCount }),
     ...(category && { category }),
@@ -398,7 +531,7 @@ async function scrollAndScrapeReviews(
   const initialCards = getReviewCards();
   if (initialCards.length === 0) {
     console.log('[GReviewSumm] No review cards found after tab open attempt');
-    return { reviews: [], placeName: document.title };
+    return { reviews: [], placeName: scrapePlaceName() };
   }
 
   // Resolve the scrollable review panel once and reuse it every round.
@@ -406,7 +539,7 @@ async function scrollAndScrapeReviews(
   console.log(`[GReviewSumm] Scroll container: ${panel ? panel.className || '<unnamed>' : 'not found — using fallback'}`);
 
   // Scrape the aggregate rating up front so the loop knows its target count.
-  const aggregate = scrapeGoogleAggregateRating();
+  const aggregate = scrapePlaceAggregate();
   const targetCount = aggregate.googleReviewCount;
 
   // Cards already parsed. A WeakSet keyed on the element means each card is
@@ -490,16 +623,11 @@ async function scrollAndScrapeReviews(
 
   // Reuse the pre-loop aggregate; only re-scrape if it came back empty.
   const { googleRating, googleReviewCount } =
-    aggregate.googleRating !== null ? aggregate : scrapeGoogleAggregateRating();
-
-  const placeNameEl =
-    document.querySelector('h1.DUwDvf') ??
-    document.querySelector('h1[class*="fontHeadlineLarge"]') ??
-    document.querySelector('h1');
+    aggregate.googleRating !== null ? aggregate : scrapePlaceAggregate();
 
   return {
     reviews: allReviews.slice(0, maxReviews),
-    placeName: placeNameEl?.textContent?.trim() ?? document.title ?? 'This Place',
+    placeName: scrapePlaceName(),
     ...(googleRating !== null && { googleRating }),
     ...(googleReviewCount !== null && { googleReviewCount }),
   };
