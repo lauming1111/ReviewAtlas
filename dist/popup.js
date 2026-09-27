@@ -75,6 +75,20 @@ const DEFAULT_SETTINGS = {
     xaiModel: AI_DEFAULTS.XAI_MODEL,
 };
 const ALL_PROVIDERS = ['ollama', 'openai', 'anthropic', 'gemini', 'groq', 'xai', 'custom'];
+/** What each provider is called on its button in Settings. */
+const PROVIDER_LABELS = {
+    ollama: 'Ollama',
+    openai: 'OpenAI',
+    anthropic: 'Claude',
+    gemini: 'Gemini',
+    groq: 'Groq',
+    xai: 'Grok',
+    custom: 'Local server',
+};
+function providerLabel(s) {
+    const provider = s.aiProvider ?? 'ollama';
+    return PROVIDER_LABELS[provider] ?? provider;
+}
 // Default placeholder text for each provider's key input
 const KEY_PLACEHOLDERS = {
     openai: 'sk-…',
@@ -817,6 +831,8 @@ function renderResult(data, timestamp) {
 }
 // ─── Cancellation ────────────────────────────────────────────────────────────
 let analysisCancelled = false;
+/** Set by "Analyze anyway", so the provider check asks only once per popup. */
+let providerCheckOverridden = false;
 async function cancelAnalysis() {
     analysisCancelled = true;
     stopProgressPoll();
@@ -891,6 +907,14 @@ function stopAllStepTimers() {
     [1, 2].forEach((s) => { if (stepIntervals[s])
         stopStepTimer(s); });
 }
+/** Step 1's sub-label once the scroll is actually running. */
+const SCROLL_STEP_DETAIL = 'Scrolling through reviews…';
+/** Change a step's sub-label without restarting its timer. */
+function setStepDetail(step, detail) {
+    const el = document.getElementById(`step-${step}-detail`);
+    if (el)
+        el.textContent = detail;
+}
 function setLoadingStep(step, detail) {
     const s1 = document.getElementById('step-1');
     const s2 = document.getElementById('step-2');
@@ -901,7 +925,7 @@ function setLoadingStep(step, detail) {
         s1?.classList.replace('step-pending', 'step-active') || s1?.classList.add('step-active');
         s2?.classList.add('step-pending');
         if (d1)
-            d1.textContent = detail ?? 'Scrolling through reviews…';
+            d1.textContent = detail ?? SCROLL_STEP_DETAIL;
         if (summarizeNowBtn)
             summarizeNowBtn.hidden = false;
         startStepTimer(1);
@@ -1055,6 +1079,31 @@ async function runAnalyze(forceFresh = false) {
         setLoadingStep(2, `${reviews.length.toLocaleString()} reviews (cached)`);
     }
     else {
+        // Scraping is the minute-long half, and it is wasted if the provider is
+        // down or the key is wrong — that used to surface only after the scroll.
+        // Every provider's model-list endpoint is free, so this costs one request.
+        if (!providerCheckOverridden) {
+            const label = providerLabel(settings);
+            const summarizeNow = document.getElementById('summarize-now-btn');
+            if (summarizeNow)
+                summarizeNow.hidden = true; // no scrape to cut short yet
+            setStepDetail(1, `Checking ${label}…`);
+            const connection = await requestConnectionTest(settings);
+            if (analysisCancelled)
+                return;
+            if (!connection.ok) {
+                // Offer to go ahead anyway: the test only proves the model list works,
+                // and a local server can serve chat without exposing /models.
+                const detail = connection.message.trim();
+                showError(`${label} is not ready — no reviews were scraped. ` +
+                    `${/[.!?]$/.test(detail) ? detail : `${detail}.`} ` +
+                    'Fix it in ⚙ Settings, or analyze anyway.', { allowAnyway: true });
+                return;
+            }
+            setStepDetail(1, SCROLL_STEP_DETAIL);
+            if (summarizeNow)
+                summarizeNow.hidden = false;
+        }
         startProgressPoll(currentTabId);
         let reviewsResponse;
         try {
@@ -1133,10 +1182,16 @@ async function runAnalyze(forceFresh = false) {
         showError(summaryResponse.payload);
     }
 }
-function showError(message) {
+function showError(message, opts) {
+    // Leaving them running kept an interval alive behind the error screen, and
+    // the next analysis would overwrite its handle without clearing it.
+    stopAllStepTimers();
     const errEl = $('[data-field="error-message"]');
     if (errEl)
         errEl.textContent = message;
+    const anywayBtn = $('[data-action="analyze-anyway"]');
+    if (anywayBtn)
+        anywayBtn.hidden = !opts?.allowAnyway;
     showHomeScreen('error');
 }
 // ─── Event listeners ──────────────────────────────────────────────────────────
@@ -1316,6 +1371,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Error / no-reviews
     document.querySelectorAll('[data-action="retry"]').forEach((btn) => {
         btn.addEventListener('click', () => runAnalyze());
+    });
+    $('[data-action="analyze-anyway"]')?.addEventListener('click', () => {
+        providerCheckOverridden = true;
+        runAnalyze();
     });
     await showInfoScreen();
 });
