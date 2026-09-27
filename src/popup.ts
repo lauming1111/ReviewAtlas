@@ -1293,6 +1293,12 @@ function showError(message: string, opts?: { allowAnyway?: boolean }): void {
 // ─── Event listeners ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Read from the manifest rather than hardcoding it, so the number in the
+  // header is always the version actually installed.
+  const versionEl = $('[data-field="app-version"]');
+  const version = chrome.runtime.getManifest?.()?.version;
+  if (versionEl && version) versionEl.textContent = ` · v${version}`;
+
   const settings = await getSettings();
   applySettingsToUI(settings);
 
