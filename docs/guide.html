@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quick start — GReviewSumm</title>
+<meta name="description" content="A plain-language guide to GReviewSumm: install it, pick an AI, and summarize the reviews of any place on Google Maps. No technical background needed." />
+<meta property="og:title" content="Quick start — GReviewSumm" />
+<meta property="og:description" content="Install it, pick an AI, summarize any place on Google Maps. Written for people who have never installed a Chrome extension." />
+<meta property="og:type" content="article" />
+<link rel="icon" href="assets/icon.png" />
+<link rel="stylesheet" href="site.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>GReviewSumm</span></a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="guide.html" aria-current="page">Quick start</a>
+      <a href="support.html">Setup &amp; FAQ</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="https://github.com/lauming1111/ReviewAtlas">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+<article class="prose" style="padding:44px 0">
+
+  <h1>Quick start</h1>
+  <p class="updated">Written for people who have never installed a browser extension. About ten minutes, most of it waiting.</p>
+
+  <h2>What this does</h2>
+  <p>
+    A popular restaurant can have five thousand reviews. Nobody reads five thousand
+    reviews. GReviewSumm reads them for you and gives you one short page: what people
+    love, what they complain about, the subjects that keep coming up, and the staff
+    members customers mention by name.
+  </p>
+  <p>
+    It only ever runs when you click a button, and only on the place you are looking
+    at. You choose which AI does the reading — one on the internet, or one running on
+    your own computer.
+  </p>
+
+  <h2>Step 1 — Install it</h2>
+  <div class="cta-row" style="margin:0 0 14px">
+    <!-- TODO: replace href and drop aria-disabled once the Web Store listing is live -->
+    <a class="btn btn-primary" href="#" aria-disabled="true">Add to Chrome</a>
+  </div>
+  <div class="callout warn">
+    <p>
+      <strong>Not published yet.</strong> The extension is waiting for Chrome Web Store
+      review, so the button above is not live. Once it is, installing takes one click:
+      press it, then press <em>Add extension</em> in the box Chrome shows you.
+    </p>
+    <p>
+      In the meantime it can be installed from the source code, which does need someone
+      comfortable with a command line — the steps are in the
+      <a href="https://github.com/lauming1111/ReviewAtlas#installation">README</a>.
+    </p>
+  </div>
+  <p>
+    After installing, click the puzzle-piece icon at the top right of Chrome and pin
+    GReviewSumm, so its icon sits in the toolbar where you can reach it.
+  </p>
+
+  <h2>Step 2 — Choose who does the reading</h2>
+  <p>
+    The extension does not include an AI. You point it at one. There are two ways to do
+    that, and neither is wrong — it is a trade between effort and privacy.
+  </p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <span class="card-icon">☁️</span>
+      <h3>An AI on the internet</h3>
+      <p>
+        Quickest to set up and works on any laptop. You sign up with a provider, copy a
+        long password-like string called an API key, and paste it into the extension.
+        The review text is sent to that provider to be summarized.
+      </p>
+    </div>
+    <div class="card">
+      <span class="card-icon">💻</span>
+      <h3>An AI on your computer</h3>
+      <p>
+        Free, and the reviews never leave your machine. You install one extra program
+        and download an AI model, which is a file of a few gigabytes. Slower on older
+        computers.
+      </p>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>If this sounds like you…</th><th>Pick</th></tr></thead>
+    <tbody>
+      <tr><td>I want it working in five minutes</td><td>An AI on the internet</td></tr>
+      <tr><td>My laptop is a few years old, or short on disk space</td><td>An AI on the internet</td></tr>
+      <tr><td>I would rather nothing left my computer</td><td>An AI on my computer</td></tr>
+      <tr><td>I do not want to sign up for anything</td><td>An AI on my computer</td></tr>
+      <tr><td>I am summarizing a lot of places and want it free</td><td>An AI on my computer</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Option A — an AI on the internet</h3>
+  <p>
+    Google Gemini and Groq both have a free allowance at the time of writing, which is
+    usually plenty for this; OpenAI, Claude and Grok charge per use. The steps are the
+    same whichever you choose.
+  </p>
+  <ol>
+    <li>
+      Create an API key with the provider you picked — for example
+      <a href="https://aistudio.google.com/apikey">Google AI Studio</a> for Gemini, or the
+      <a href="https://console.groq.com/keys">Groq console</a>. You sign in, ask for a new
+      key, and it shows you a long string of characters. Copy it.
+    </li>
+    <li>Click the GReviewSumm icon in Chrome, then the <strong>⚙</strong> button at the top right of the popup.</li>
+    <li>Under <em>AI Provider</em>, click the provider you chose.</li>
+    <li>Paste the key into the key box.</li>
+    <li>Press <strong>Test connection</strong>. It should say it connected, and the model list fills in by itself. Leave the model as it is unless you have a reason to change it.</li>
+    <li>Press <strong>Save</strong>.</li>
+  </ol>
+  <div class="callout">
+    <p>
+      Treat the key like a password: anyone who has it can spend your allowance. The
+      extension stores it encrypted, shows it only as a <em>✓ Saved</em> badge afterwards,
+      and never puts it on the page you are browsing. The <strong>✕</strong> button removes it.
+    </p>
+  </div>
+
+  <h3>Option B — an AI on your computer</h3>
+  <ol>
+    <li>Install <a href="https://ollama.com/download">Ollama</a> — a normal app for Mac, Windows or Linux. Once installed it runs quietly in the background; there is nothing to start each time.</li>
+    <li>Add a model to it. A good first one is <code>llama3.2</code>, which is a couple of gigabytes. You can pick it in the Ollama app, or, if a terminal does not scare you, run <code>ollama pull llama3.2</code>.</li>
+    <li>In GReviewSumm, open <strong>⚙</strong> settings and choose <strong>Ollama</strong> under <em>AI Provider</em>.</li>
+    <li>Press <strong>Test connection</strong>. The model box then lists what you actually have installed — choose your model there.</li>
+    <li>Press <strong>Save</strong>.</li>
+  </ol>
+  <div class="callout">
+    <p>
+      Already run LM Studio, Jan, llama.cpp or something similar? Choose <strong>Local
+      server</strong> instead and pick your program from the preset list — the address is
+      filled in for you. Details are in the <a href="support.html">Setup &amp; FAQ</a>.
+    </p>
+  </div>
+
+  <h2>Step 3 — Summarize a place</h2>
+  <ol>
+    <li>Open <a href="https://www.google.com/maps">Google Maps</a> and search for a business — a restaurant, hotel, clinic, anything with reviews.</li>
+    <li>Click the place so its panel opens on the left.</li>
+    <li>Click the GReviewSumm icon. It shows the place name, rating, address and phone straight away.</li>
+    <li>Press <strong>Analyze Reviews</strong>.</li>
+    <li>
+      Wait. The extension checks your AI is responding, then scrolls the reviews panel
+      to collect reviews — you will see the page moving on its own, which is normal — and
+      then asks the AI to summarize them. A minute is typical for a busy place.
+    </li>
+  </ol>
+  <div class="callout good">
+    <p>
+      Leave the popup open while it works. Clicking elsewhere closes it and stops the run;
+      just press <em>Analyze Reviews</em> again.
+    </p>
+  </div>
+
+  <h2>Reading the result</h2>
+  <table>
+    <thead><tr><th>On screen</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td><strong>✓ What people love</strong></td><td>Praise that came up repeatedly — not one person's opinion.</td></tr>
+      <tr><td><strong>✗ Common complaints</strong></td><td>The same, for problems.</td></tr>
+      <tr><td><strong>◆ Top themes</strong></td><td>Subjects the reviews keep returning to, such as waiting times or parking.</td></tr>
+      <tr><td><strong>★ Frequently mentioned staff</strong></td><td>People customers named. Absent when nobody was named.</td></tr>
+      <tr><td>The badge near the top</td><td>The overall mood of the reviews: positive, mixed, or negative.</td></tr>
+      <tr><td>"113 of 5,967 reviews analyzed"</td><td>5,967 is what Google reports for the place; 113 is how many were actually read this time. More is not always better — see <em>Analysis depth</em> below.</td></tr>
+      <tr><td><strong>↺ Re-analyze</strong></td><td>Summarize the same reviews again, for instance after switching AI provider. Does not re-read the page.</td></tr>
+      <tr><td><strong>⟳ Fresh</strong></td><td>Read the page again from scratch. Use it if the place has new reviews.</td></tr>
+      <tr><td><strong>⏱</strong> in the header</td><td>Your recent summaries. They are kept for a day, on your computer only.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Three settings worth knowing</h2>
+  <table>
+    <thead><tr><th>Setting</th><th>What to do with it</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Review scope</strong></td>
+        <td><em>All</em> gives the fullest picture. <em>Recent</em>, or <em>1 / 3 / 6 Months</em> and <em>1 Year</em>, answer a different question: is this place still good? Handy when a restaurant has changed hands.</td>
+      </tr>
+      <tr>
+        <td><strong>Analysis depth</strong></td>
+        <td>How many of the collected reviews are handed to the AI. <em>Quick</em> is fastest, <em>Thorough</em> reads the most. On a computer-run AI, <em>Thorough</em> can be slow — start with <em>Balanced</em>.</td>
+      </tr>
+      <tr>
+        <td><strong>Output language</strong></td>
+        <td>The language the summary is written in. It does not matter what language the reviews are in.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>If something goes wrong</h2>
+
+  <h3>"Ollama is not ready" or "Gemini is not ready"</h3>
+  <p>
+    Your AI answered nothing, or refused. The extension checks this <em>before</em> reading
+    the page, so no time was wasted. The message says what it found — a key that looks
+    wrong, or a program that is not running. Press <strong>Settings</strong>, fix it, and try
+    again. The <strong>Analyze anyway</strong> button is there for the rare setup that works
+    even though the check fails; if you are not sure, fix the setting instead.
+  </p>
+
+  <h3>"Open a business on Google Maps"</h3>
+  <p>
+    The tab you are on is not a place page. Search for a business on Google Maps, click
+    the result so its panel opens, then click the icon again.
+  </p>
+
+  <h3>It says there are no reviews</h3>
+  <p>
+    Either the place genuinely has none, or the page had not finished loading. Give it a
+    moment, scroll the page once by hand, and try again.
+  </p>
+
+  <h3>It is taking ages</h3>
+  <p>
+    Two things take time: collecting reviews, and the AI writing the summary. A place
+    with thousands of reviews takes longer to collect; a model on your own computer takes
+    longer to write. Lower <em>Analysis depth</em>, or reduce the number of reviews in
+    settings.
+  </p>
+
+  <h3>The summary is in the wrong language</h3>
+  <p>Set <em>Output language</em> in settings, then press <strong>↺ Re-analyze</strong>.</p>
+
+  <h3>Telling us about a problem</h3>
+  <p>
+    The version number sits in the popup header, next to the name. Including it, plus the
+    provider and model you use, makes a report far easier to act on. Write to
+    <a href="mailto:minglau0315@gmail.com">minglau0315@gmail.com</a> or open an issue on
+    <a href="https://github.com/lauming1111/ReviewAtlas/issues">GitHub</a>.
+  </p>
+
+  <h2>Words you will see</h2>
+  <table>
+    <thead><tr><th>Word</th><th>In plain terms</th></tr></thead>
+    <tbody>
+      <tr><td>Model</td><td>The AI itself. Bigger models write better summaries and run slower.</td></tr>
+      <tr><td>API key</td><td>A long password that lets the extension use your account with an AI provider.</td></tr>
+      <tr><td>Local / local server</td><td>Running on your own computer, rather than on someone else's.</td></tr>
+      <tr><td>Endpoint</td><td>The address of an AI program, usually something like <code>http://localhost:11434</code>. <em>localhost</em> means "this computer".</td></tr>
+      <tr><td>Context window</td><td>How much text a model can consider at once. Too small, and long batches of reviews get cut short.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Is any of this private?</h2>
+  <p>
+    There is no GReviewSumm server, and nothing is tracked. If you chose an AI on your own
+    computer, the reviews never leave it. If you chose one on the internet, the review text
+    goes to that provider and nowhere else. The full details are on the
+    <a href="privacy.html">privacy page</a>.
+  </p>
+
+  <p class="updated" style="margin-top:28px">
+    Want the technical version — other local runtimes, sampling settings, tuning?
+    That is the <a href="support.html">Setup &amp; FAQ</a>.
+  </p>
+
+</article>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p>© 2026 minglau0315 · Source available, not open source — see the <a href="https://github.com/lauming1111/ReviewAtlas/blob/main/LICENSE">licence</a>.</p>
+    <nav class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="https://github.com/lauming1111/ReviewAtlas">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
