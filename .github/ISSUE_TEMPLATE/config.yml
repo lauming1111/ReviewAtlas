@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Quick start guide
+    url: https://lauming1111.github.io/ReviewAtlas/guide.html
+    about: Installing, choosing an AI and running your first summary, in plain language.
+  - name: Setup & FAQ
+    url: https://lauming1111.github.io/ReviewAtlas/support.html
+    about: Provider setup, the settings worth knowing, and fixes for the usual problems.
+  - name: Email instead
+    url: mailto:minglau0315@gmail.com
+    about: If you would rather not post in public. Please still include the version and provider.

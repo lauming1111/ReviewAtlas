@@ -1,0 +1,31 @@
+name: Idea or request
+description: Something Review Atlas should do, or should do differently
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome. Review Atlas has one job — turning the reviews on a place page into
+        pros, cons and themes — so the requests most likely to land are the ones that make that
+        job work better.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: The situation, rather than the feature. It often turns out there is a simpler way to solve it.
+      placeholder: I compare several restaurants at once and end up re-running the same place because I lose track of which I already checked.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like it to do
+      placeholder: Mark places that are already in History when I open one of them again.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do at the moment
+      description: Including "nothing" — that is useful to know too.
