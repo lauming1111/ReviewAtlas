@@ -1,7 +1,7 @@
 import type { AnalysisDepth } from './types.js';
 
 /**
- * ─── GReviewSumm — Tunable Parameters ────────────────────────────────────────
+ * ─── Review Atlas — Tunable Parameters ────────────────────────────────────────
  *
  * Edit this file to tune the extension's behaviour.
  *

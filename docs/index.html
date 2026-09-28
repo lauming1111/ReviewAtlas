@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>GReviewSumm — AI summaries for Google Maps reviews</title>
+<title>Review Atlas — AI summaries for Google Maps reviews</title>
 <meta name="description" content="Summarize hundreds of Google Maps reviews into pros, cons and themes. Runs on your own local model, so the reviews never leave your machine." />
-<meta property="og:title" content="GReviewSumm — AI summaries for Google Maps reviews" />
+<meta property="og:title" content="Review Atlas — AI summaries for Google Maps reviews" />
 <meta property="og:description" content="Pros, cons and themes from hundreds of reviews in seconds. Bring your own local model." />
 <meta property="og:type" content="website" />
 <link rel="icon" href="assets/icon.png" />
@@ -15,7 +15,7 @@
 
 <header class="site-header">
   <div class="wrap nav">
-    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>GReviewSumm</span></a>
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>Review Atlas</span></a>
     <nav class="nav-links">
       <a href="index.html" aria-current="page">Home</a>
       <a href="guide.html">Quick start</a>
@@ -31,20 +31,21 @@
 
 <section class="hero">
   <div class="wrap">
-    <img class="hero-icon" src="assets/icon.png" alt="GReviewSumm icon" width="78" height="78" />
+    <img class="hero-icon" src="assets/icon.png" alt="Review Atlas icon" width="78" height="78" />
     <span class="pill">🔒 <b>Local-first</b> — your reviews can stay on your machine</span>
-    <h1>Read 1,000 reviews<br />in about a minute.</h1>
+    <h1>Read the reviews you<br />were never going to read.</h1>
     <p class="tagline">
-      GReviewSumm collects the reviews on a Google Maps page and turns them into
+      Review Atlas collects the reviews on a Google Maps page and turns them into
       pros, cons, recurring themes and the staff people actually name — using
       whichever AI you choose, including a model running on your own computer.
+      It reads nothing until you press the button, and only the tab you are on.
     </p>
     <div class="cta-row">
-      <!-- TODO: replace href once the Web Store listing is live -->
-      <a class="btn btn-primary" href="#install" aria-disabled="false">Get the extension</a>
-      <a class="btn btn-secondary" href="guide.html">Quick start guide</a>
+      <!-- TODO: point the primary button at the Web Store listing once it is live -->
+      <a class="btn btn-primary" href="#install">How to install it</a>
+      <a class="btn btn-secondary" href="guide.html">New to this? Start here</a>
     </div>
-    <p class="updated">Pending review on the Chrome Web Store — install from source in the meantime.</p>
+    <p class="updated">In review at the Chrome Web Store. Until it is listed, it installs from source.</p>
   </div>
 </section>
 
@@ -52,7 +53,11 @@
   <div class="wrap">
     <div class="section-head">
       <h2>What it actually does</h2>
-      <p>The reviews panel on a busy place holds hundreds of entries you will never scroll through. This reads them for you.</p>
+      <p>
+        The reviews panel on a busy place holds hundreds of entries you will never scroll through.
+        This reads them for you. Collecting them takes about a minute; the summary that follows
+        takes seconds on a hosted model, longer on one running on your own machine.
+      </p>
     </div>
     <div class="grid grid-3">
       <div class="card">
@@ -68,7 +73,7 @@
       <div class="card">
         <span class="card-icon">★</span>
         <h3>Named staff</h3>
-        <p>Employees praised by name across multiple reviews — filtered so reviewers' own names never leak in.</p>
+        <p>Employees praised by name across several reviews. Reviewers' own names are stripped out before anything is sent to the AI.</p>
       </div>
       <div class="card">
         <span class="card-icon">⏱</span>
@@ -169,6 +174,14 @@
         <h3>No analytics</h3>
         <p>No telemetry, no tracking, no ads, no account. The popup makes zero third-party requests — even the fonts are bundled.</p>
       </div>
+      <div class="card">
+        <h3>Only when you ask</h3>
+        <p>It reads a page after you press <em>Analyze Reviews</em>, and only that tab. It does not run in the background or on other sites.</p>
+      </div>
+      <div class="card">
+        <h3>Nothing to walk away from</h3>
+        <p>Everything it saves lives on your computer and goes when the extension does. There is no account to close.</p>
+      </div>
     </div>
     <p style="margin-top:20px"><a href="privacy.html">Read the full privacy policy →</a></p>
   </div>
@@ -179,9 +192,10 @@
     <div class="section-head">
       <h2>Install</h2>
       <p>
-        Not yet on the Chrome Web Store. Until it is, load it from source — it takes about two minutes.
-        Never installed an extension before? The <a href="guide.html">quick start guide</a> walks through
-        the whole thing, including choosing an AI, without assuming any of this is familiar.
+        Not yet on the Chrome Web Store. Until it is, it loads from source — a few minutes if a
+        terminal is familiar ground. If it is not, the <a href="guide.html">quick start guide</a>
+        covers the same ground without assuming any of this, and says what to do while the listing
+        is still in review.
       </p>
     </div>
     <div class="steps">
@@ -199,7 +213,7 @@
       </div></div>
       <div class="step"><div>
         <h3>Open a place and hit Analyze</h3>
-        <p>Go to any business on Google Maps, click the icon, press <em>Analyze Reviews</em>.</p>
+        <p>Go to any business on Google Maps, click the icon, press <em>Analyze Reviews</em>. The page will scroll itself while reviews are collected — that is the extension working, not a fault.</p>
       </div></div>
     </div>
   </div>
@@ -207,33 +221,54 @@
 
 <section id="support-project">
   <div class="wrap">
-    <div class="section-head">
-      <h2>Support the project</h2>
-      <p>GReviewSumm is free, has no ads and collects nothing. If it saved you some scrolling, a tip is welcome.</p>
-    </div>
-    <!-- TODO: replace each PLACEHOLDER with a real receiving address before publishing.
-         Leave a row commented out rather than shipping a wrong address. -->
-    <div class="donate-row">
-      <div class="donate-item">
-        <span class="donate-chain">Bitcoin</span>
-        <span class="donate-addr">PLACEHOLDER — add BTC address</span>
-      </div>
-      <div class="donate-item">
-        <span class="donate-chain">Ethereum</span>
-        <span class="donate-addr">PLACEHOLDER — add ETH address</span>
-      </div>
-      <div class="donate-item">
-        <span class="donate-chain">Solana</span>
-        <span class="donate-addr">PLACEHOLDER — add SOL address</span>
-      </div>
-    </div>
-    <div class="callout warn" style="margin-top:15px">
-      <p><strong>Always verify an address before sending.</strong> Crypto transfers cannot be reversed.</p>
-    </div>
+    <!-- The address is assembled in the browser, so the page source carries no
+         plain address for address-harvesting crawlers. Friction, not secrecy —
+         this repository is public. -->
+    <p class="donate-note">
+      The extension is free, and there is no paid version to move you towards. If you would like to
+      leave a tip anyway, there is an Ethereum address:
+      <button class="donate-reveal" type="button"
+              data-a="ZWY4MTkyOTIzZTc3MGU1YzNiZDdhMWIxNzViMDMwYWRiOGUxM2ZkOXgw">show it</button><noscript>
+      (JavaScript is needed to display it)</noscript>.
+      Transfers cannot be undone, so compare the whole address before sending.
+      <span class="donate-status" role="status" aria-live="polite"></span>
+    </p>
   </div>
 </section>
 
 </main>
+
+<script>
+  // Scroll to a section without leaving "#install" hanging in the address bar.
+  // Without JavaScript the plain anchor still works, hash and all.
+  document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Kept out of the markup so a crawler reading the HTML finds no address.
+  document.querySelectorAll('.donate-reveal').forEach(function (btn) {
+    var address = null;
+    var status = btn.parentElement.querySelector('.donate-status');
+    btn.addEventListener('click', function () {
+      if (!address) {
+        address = atob(btn.getAttribute('data-a')).split('').reverse().join('');
+        btn.textContent = address;
+        btn.setAttribute('data-revealed', '');
+        if (status) status.textContent = 'Click it to copy.';
+        return;
+      }
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(address).then(function () {
+        if (status) status.textContent = 'Copied';
+      });
+    });
+  });
+</script>
 
 <footer class="site-footer">
   <div class="wrap footer-inner">

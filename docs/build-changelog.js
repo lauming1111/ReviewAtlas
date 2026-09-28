@@ -49,7 +49,7 @@ for (const raw of md.split('\n')) {
 }
 closeList();
 
-const nav = (cur) => ['index.html:Home', 'support.html:Setup &amp; FAQ', 'privacy.html:Privacy', 'changelog.html:Changelog']
+const nav = (cur) => ['index.html:Home', 'guide.html:Quick start', 'support.html:Setup &amp; FAQ', 'privacy.html:Privacy', 'changelog.html:Changelog']
   .map((e) => { const [h, t] = e.split(':'); return `      <a href="${h}"${h === cur ? ' aria-current="page"' : ''}>${t}</a>`; })
   .join('\n');
 
@@ -58,8 +58,8 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Changelog — GReviewSumm</title>
-<meta name="description" content="Every change to GReviewSumm, by version." />
+<title>Changelog — Review Atlas</title>
+<meta name="description" content="Every change to Review Atlas, by version." />
 <link rel="icon" href="assets/icon.png" />
 <link rel="stylesheet" href="site.css" />
 </head>
@@ -67,10 +67,10 @@ const html = `<!DOCTYPE html>
 
 <header class="site-header">
   <div class="wrap nav">
-    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>GReviewSumm</span></a>
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>Review Atlas</span></a>
     <nav class="nav-links">
 ${nav('changelog.html')}
-      <a href="https://github.com/lauming1111/GReviewSumm">Source</a>
+      <a href="https://github.com/lauming1111/ReviewAtlas">Source</a>
     </nav>
   </div>
 </header>
@@ -85,12 +85,12 @@ ${out.map((l) => '  ' + l).join('\n')}
 
 <footer class="site-footer">
   <div class="wrap footer-inner">
-    <p>© 2026 minglau0315 · Source available, not open source — see the <a href="https://github.com/lauming1111/GReviewSumm/blob/main/LICENSE">licence</a>.</p>
+    <p>© 2026 minglau0315 · Source available, not open source — see the <a href="https://github.com/lauming1111/ReviewAtlas/blob/main/LICENSE">licence</a>.</p>
     <nav class="footer-links">
       <a href="index.html">Home</a>
       <a href="privacy.html">Privacy</a>
       <a href="support.html">Support</a>
-      <a href="https://github.com/lauming1111/GReviewSumm">GitHub</a>
+      <a href="https://github.com/lauming1111/ReviewAtlas">GitHub</a>
     </nav>
   </div>
 </footer>

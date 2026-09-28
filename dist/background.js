@@ -45,7 +45,7 @@ async function allowLocalServer(settings) {
     }
     catch (err) {
         // Not fatal — the request still goes out, and a refusal surfaces as its own error.
-        console.warn('[GReviewSumm] Could not install the local-server Origin rule:', err);
+        console.warn('[Review Atlas] Could not install the local-server Origin rule:', err);
     }
 }
 function sleep(ms) {
@@ -137,7 +137,7 @@ function filterReviews(reviews, settings) {
     });
     let dateParseWarning;
     if (unparseable > 0) {
-        console.warn(`[GReviewSumm] ${unparseable}/${reviews.length} review(s) had an unparseable date — kept rather than dropped.`);
+        console.warn(`[Review Atlas] ${unparseable}/${reviews.length} review(s) had an unparseable date — kept rather than dropped.`);
         // parseReviewDate only understands English relative dates, so on a
         // non-English Maps locale every date fails and the time window silently
         // degrades to "all". Tell the user instead of only the console.
@@ -179,7 +179,7 @@ function resolveCharBudget(settings, depthChars) {
     // send at least a handful of reviews rather than an empty prompt.
     const clamped = Math.max(2000, Math.floor(fromCtx));
     if (clamped < depthChars) {
-        console.warn(`[GReviewSumm] num_ctx ${numCtx} limits the prompt to ~${clamped.toLocaleString()} chars ` +
+        console.warn(`[Review Atlas] num_ctx ${numCtx} limits the prompt to ~${clamped.toLocaleString()} chars ` +
             `(depth preset allows ${depthChars.toLocaleString()}). Raise num_ctx for a fuller analysis.`);
     }
     return Math.min(depthChars, clamped);
@@ -317,7 +317,7 @@ function toSentiment(raw) {
         const hit = SENTIMENTS.find((s) => s === v);
         if (hit)
             return hit;
-        console.warn(`[GReviewSumm] Unrecognised overallSentiment ${JSON.stringify(raw)} — using 'mixed'.`);
+        console.warn(`[Review Atlas] Unrecognised overallSentiment ${JSON.stringify(raw)} — using 'mixed'.`);
     }
     return 'mixed';
 }
@@ -392,7 +392,7 @@ async function callOpenAICompatible(label, url, apiKey, model, prompt, opts = {}
     // A strict server rejects unknown fields with 400. Rather than surfacing a
     // confusing error, drop the non-standard params and try once more.
     if (!response.ok && response.status === 400 && wantExtras) {
-        console.warn(`[GReviewSumm] ${label} rejected top_k/repetition_penalty — retrying without them.`);
+        console.warn(`[Review Atlas] ${label} rejected top_k/repetition_penalty — retrying without them.`);
         response = await send(false);
     }
     if (!response.ok) {
@@ -672,7 +672,7 @@ async function withRetry(fn, maxAttempts = AI_DEFAULTS.MAX_RETRIES) {
             if (!(err instanceof SyntaxError) || attempt >= maxAttempts)
                 throw err;
             const delay = AI_DEFAULTS.RETRY_BACKOFF_MS * 2 ** (attempt - 1);
-            console.warn(`[GReviewSumm] Invalid JSON on attempt ${attempt}/${maxAttempts}, retrying in ${delay}ms…`);
+            console.warn(`[Review Atlas] Invalid JSON on attempt ${attempt}/${maxAttempts}, retrying in ${delay}ms…`);
             await sleep(delay);
         }
     }
@@ -694,7 +694,7 @@ async function summarize(reviews, placeName, settings, googleRating, googleRevie
         await allowLocalServer(settings);
     if (provider === 'ollama')
         await checkOllama(settings);
-    console.log(`[GReviewSumm] ${provider} · depth=${settings.analysisDepth ?? AI_DEFAULTS.ANALYSIS_DEPTH} · ` +
+    console.log(`[Review Atlas] ${provider} · depth=${settings.analysisDepth ?? AI_DEFAULTS.ANALYSIS_DEPTH} · ` +
         `${selected.length} of ${filtered.length} reviews in prompt ` +
         `(~${Math.round(prompt.length / PROMPT_BUDGET.CHARS_PER_TOKEN).toLocaleString()} tokens)`);
     const parsed = await withRetry(async () => parseAIResponse(await call(prompt, settings)));
@@ -704,7 +704,7 @@ async function summarize(reviews, placeName, settings, googleRating, googleRevie
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === 'SUMMARIZE') {
         const { reviews, placeName, settings, googleRating, googleReviewCount } = message.payload;
-        console.log(`[GReviewSumm] SUMMARIZE via ${settings.aiProvider ?? 'ollama'} for "${placeName}"`);
+        console.log(`[Review Atlas] SUMMARIZE via ${settings.aiProvider ?? 'ollama'} for "${placeName}"`);
         summarize(reviews, placeName, settings, googleRating, googleReviewCount)
             .then((result) => sendResponse({ type: 'SUMMARY_RESULT', payload: result }))
             .catch((err) => sendResponse({

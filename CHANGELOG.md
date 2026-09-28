@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to GReviewSumm will be documented here.
+All notable changes to Review Atlas will be documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versions follow [Semantic Versioning](https://semver.org/).
@@ -8,6 +8,13 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ---
 
 ## [Unreleased]
+
+---
+
+## [1.4.0] — 2026-09-28
+
+### Changed
+- **Renamed to Review Atlas.** The name, the popup header and the website follow the repository, which was renamed earlier. Storage keys keep their old names on purpose, so settings, saved API keys and cached summaries survive the update untouched
 
 ### Added
 - **Back button in Settings**, pinned to the top of the pane so it stays in reach while scrolling. Previously the only way out was Cancel at the very bottom
