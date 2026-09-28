@@ -1,0 +1,106 @@
+name: Bug report
+description: Something in Review Atlas does not work as it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The fields below are the ones that usually decide
+        whether a problem can be reproduced — a report without them often cannot be acted on.
+
+        **Do not paste an API key.** Keys can appear in things you copy from a network tab;
+        replace anything key-shaped with `…` before posting.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+      placeholder: The summary said 5 / 5, but the place shows 4.5 on Google Maps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: If it involves a particular place on Google Maps, please include the link — many problems only appear on certain pages.
+      placeholder: |
+        1. Open https://www.google.com/maps/place/…
+        2. Click the Reviews tab
+        3. Open the extension and press Analyze Reviews
+        4. …
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Shown in the popup header, next to the name.
+      placeholder: "1.4.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: AI provider
+      options:
+        - Ollama
+        - Local server (LM Studio, llama.cpp, Jan, vLLM, …)
+        - OpenAI
+        - Claude
+        - Gemini
+        - Groq
+        - Grok
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: As it appears in the model field in settings.
+      placeholder: "llama3.2:latest"
+
+  - type: dropdown
+    id: page
+    attributes:
+      label: Where it happened
+      options:
+        - A place on Google Maps
+        - Google Maps search results
+        - A Google Search results page
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and operating system
+      placeholder: "Chrome 153, macOS 15"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output
+      description: |
+        Optional, but it usually turns a guess into a fix. Lines from Review Atlas start with `[Review Atlas]`.
+
+        * Collecting reviews logs to the **page** console: open the Google Maps tab, press F12, Console tab.
+        * The AI request logs to the **service worker** console: `chrome://extensions` → Review Atlas → Details → *service worker*.
+        * The popup logs to its own console: right-click inside the popup → Inspect.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before posting
+      options:
+        - label: There is no API key anywhere in what I have pasted
+          required: true
+        - label: I checked that my provider is reachable with **Test connection** in settings
+          required: false
