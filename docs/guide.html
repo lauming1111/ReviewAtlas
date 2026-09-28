@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Quick start — GReviewSumm</title>
-<meta name="description" content="A plain-language guide to GReviewSumm: install it, pick an AI, and summarize the reviews of any place on Google Maps. No technical background needed." />
-<meta property="og:title" content="Quick start — GReviewSumm" />
+<title>Quick start — Review Atlas</title>
+<meta name="description" content="A plain-language guide to Review Atlas: install it, pick an AI, and summarize the reviews of any place on Google Maps. No technical background needed." />
+<meta property="og:title" content="Quick start — Review Atlas" />
 <meta property="og:description" content="Install it, pick an AI, summarize any place on Google Maps. Written for people who have never installed a Chrome extension." />
 <meta property="og:type" content="article" />
 <link rel="icon" href="assets/icon.png" />
@@ -15,7 +15,7 @@
 
 <header class="site-header">
   <div class="wrap nav">
-    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>GReviewSumm</span></a>
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>Review Atlas</span></a>
     <nav class="nav-links">
       <a href="index.html">Home</a>
       <a href="guide.html" aria-current="page">Quick start</a>
@@ -36,7 +36,7 @@
   <h2>What this does</h2>
   <p>
     A popular restaurant can have five thousand reviews. Nobody reads five thousand
-    reviews. GReviewSumm reads them for you and gives you one short page: what people
+    reviews. Review Atlas reads them for you and gives you one short page: what people
     love, what they complain about, the subjects that keep coming up, and the staff
     members customers mention by name.
   </p>
@@ -48,8 +48,8 @@
 
   <h2>Step 1 — Install it</h2>
   <div class="cta-row" style="margin:0 0 14px">
-    <!-- TODO: replace href and drop aria-disabled once the Web Store listing is live -->
-    <a class="btn btn-primary" href="#" aria-disabled="true">Add to Chrome</a>
+    <!-- TODO: swap for <a class="btn btn-primary" href="…store listing…"> once it is live -->
+    <button class="btn btn-primary" type="button" disabled>Add to Chrome</button>
   </div>
   <div class="callout warn">
     <p>
@@ -65,7 +65,7 @@
   </div>
   <p>
     After installing, click the puzzle-piece icon at the top right of Chrome and pin
-    GReviewSumm, so its icon sits in the toolbar where you can reach it.
+    Review Atlas, so its icon sits in the toolbar where you can reach it.
   </p>
 
   <h2>Step 2 — Choose who does the reading</h2>
@@ -119,7 +119,7 @@
       <a href="https://console.groq.com/keys">Groq console</a>. You sign in, ask for a new
       key, and it shows you a long string of characters. Copy it.
     </li>
-    <li>Click the GReviewSumm icon in Chrome, then the <strong>⚙</strong> button at the top right of the popup.</li>
+    <li>Click the Review Atlas icon in Chrome, then the <strong>⚙</strong> button at the top right of the popup.</li>
     <li>Under <em>AI Provider</em>, click the provider you chose.</li>
     <li>Paste the key into the key box.</li>
     <li>Press <strong>Test connection</strong>. It should say it connected, and the model list fills in by itself. Leave the model as it is unless you have a reason to change it.</li>
@@ -137,7 +137,7 @@
   <ol>
     <li>Install <a href="https://ollama.com/download">Ollama</a> — a normal app for Mac, Windows or Linux. Once installed it runs quietly in the background; there is nothing to start each time.</li>
     <li>Add a model to it. A good first one is <code>llama3.2</code>, which is a couple of gigabytes. You can pick it in the Ollama app, or, if a terminal does not scare you, run <code>ollama pull llama3.2</code>.</li>
-    <li>In GReviewSumm, open <strong>⚙</strong> settings and choose <strong>Ollama</strong> under <em>AI Provider</em>.</li>
+    <li>In Review Atlas, open <strong>⚙</strong> settings and choose <strong>Ollama</strong> under <em>AI Provider</em>.</li>
     <li>Press <strong>Test connection</strong>. The model box then lists what you actually have installed — choose your model there.</li>
     <li>Press <strong>Save</strong>.</li>
   </ol>
@@ -153,7 +153,7 @@
   <ol>
     <li>Open <a href="https://www.google.com/maps">Google Maps</a> and search for a business — a restaurant, hotel, clinic, anything with reviews.</li>
     <li>Click the place so its panel opens on the left.</li>
-    <li>Click the GReviewSumm icon. It shows the place name, rating, address and phone straight away.</li>
+    <li>Click the Review Atlas icon. It shows the place name, rating, address and phone straight away.</li>
     <li>Press <strong>Analyze Reviews</strong>.</li>
     <li>
       Wait. The extension checks your AI is responding, then scrolls the reviews panel
@@ -259,7 +259,7 @@
 
   <h2>Is any of this private?</h2>
   <p>
-    There is no GReviewSumm server, and nothing is tracked. If you chose an AI on your own
+    There is no Review Atlas server, and nothing is tracked. If you chose an AI on your own
     computer, the reviews never leave it. If you chose one on the internet, the review text
     goes to that provider and nowhere else. The full details are on the
     <a href="privacy.html">privacy page</a>.

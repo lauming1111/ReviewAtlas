@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Setup &amp; FAQ — GReviewSumm</title>
-<meta name="description" content="Set up GReviewSumm with Ollama, LM Studio, llama.cpp, Jan, vLLM or a hosted API, and fix common problems." />
+<title>Setup &amp; FAQ — Review Atlas</title>
+<meta name="description" content="Set up Review Atlas with Ollama, LM Studio, llama.cpp, Jan, vLLM or a hosted API, and fix common problems." />
 <link rel="icon" href="assets/icon.png" />
 <link rel="stylesheet" href="site.css" />
 </head>
@@ -12,7 +12,7 @@
 
 <header class="site-header">
   <div class="wrap nav">
-    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>GReviewSumm</span></a>
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="" /><span>Review Atlas</span></a>
     <nav class="nav-links">
       <a href="index.html">Home</a>
       <a href="guide.html">Quick start</a>
@@ -28,7 +28,11 @@
 <article class="prose" style="padding:44px 0">
 
   <h1>Setup &amp; FAQ</h1>
-  <p class="updated">For version 1.3.0.</p>
+  <p class="updated">
+    For version 1.4.0. This page assumes you are comfortable with servers, ports and API keys —
+    if that is not you, the <a href="guide.html">quick start guide</a> covers the same setup in
+    plain language.
+  </p>
 
   <h2>Choosing a provider</h2>
   <p>
@@ -123,11 +127,18 @@
 
   <h2>Troubleshooting</h2>
 
-  <h3>"Cannot reach Ollama at…"</h3>
+  <h3>"Ollama is not ready" / "Cannot reach Ollama at…"</h3>
   <p>
-    The server is not running or is on a different address. Start it with
-    <code>ollama serve</code>, or correct <strong>Server endpoint</strong> in settings. Press
-    <em>Test connection</em> to confirm before running an analysis.
+    The provider is checked before any reviews are collected, so this appears within a second and
+    nothing was scraped. The server is not running, or is on a different address: start it with
+    <code>ollama serve</code>, or correct <strong>Server endpoint</strong> in settings, then press
+    <em>Test connection</em> to confirm.
+  </p>
+  <p>
+    The same message with a provider name in it — "Gemini is not ready" — means that provider
+    refused the check, usually a wrong or expired API key. <em>Analyze anyway</em> is there for the
+    uncommon setup that fails the check but works regardless: the check calls the provider's
+    model-list endpoint, and a self-hosted server can serve chat without offering one.
   </p>
 
   <h3>My custom endpoint will not connect</h3>
@@ -163,6 +174,15 @@
   <p>
     <strong>↺ Re-analyze</strong> reuses the collected reviews and just re-runs the AI.
     <strong>⟳ Fresh</strong> re-scrapes the page from scratch.
+  </p>
+
+  <h2>What it does when you are not using it</h2>
+  <p>
+    Nothing. There is no background activity, no scheduled work and no connection kept open. The
+    extension's worker wakes only to make the request you asked for, and the content script on a
+    Maps page does nothing until the popup tells it to. Close the popup mid-analysis and the run is
+    abandoned — the result is discarded, though the page may finish the scroll already in progress.
+    <em>Cancel</em> stops it properly.
   </p>
 
   <h2>Still stuck</h2>

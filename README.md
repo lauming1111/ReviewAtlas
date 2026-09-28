@@ -1,4 +1,4 @@
-# GReviewSumm – AI Review Summarizer
+# Review Atlas – AI Review Summarizer
 
 A Chrome extension that instantly summarizes Google Maps reviews using AI.
 Runs against **any local model** — Ollama, LM Studio, llama.cpp, Jan, vLLM and other
@@ -97,7 +97,7 @@ This compiles TypeScript and copies the output to `review-atlas-extension/`.
 ## Usage
 
 1. Navigate to a business page on **Google Maps** (`google.com/maps` or `maps.google.com`)
-2. Click the **GReviewSumm** extension icon
+2. Click the **Review Atlas** extension icon
 3. The popup shows the place name, rating, and total review count
 4. Click **Analyze Reviews** — the extension scrolls through reviews automatically, then sends them to your chosen AI
 5. View the summary, pros, cons, top themes, and frequently mentioned staff

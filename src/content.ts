@@ -31,7 +31,7 @@ async function ensureReviewsTabOpen(tabOpenWaitMs: number): Promise<void> {
 
   if (reviewsBtn) {
     reviewsBtn.click();
-    console.log('[GReviewSumm] Clicked Reviews tab, waiting for cards…');
+    console.log('[Review Atlas] Clicked Reviews tab, waiting for cards…');
     await sleep(tabOpenWaitMs);
   }
 }
@@ -69,7 +69,7 @@ async function ensureSortOrder(sortBy: ReviewSort, pollMs: number, timeoutMs: nu
     });
 
   if (!trigger) {
-    console.log('[GReviewSumm] Sort control not found — leaving the page order as-is');
+    console.log('[Review Atlas] Sort control not found — leaving the page order as-is');
     return false;
   }
 
@@ -92,13 +92,13 @@ async function ensureSortOrder(sortBy: ReviewSort, pollMs: number, timeoutMs: nu
   }
 
   if (!option) {
-    console.log(`[GReviewSumm] "${sortBy}" sort option not found — leaving the page order as-is`);
+    console.log(`[Review Atlas] "${sortBy}" sort option not found — leaving the page order as-is`);
     trigger.click(); // close the menu we opened
     return false;
   }
 
   option.click();
-  console.log(`[GReviewSumm] Sorted reviews by ${sortBy}`);
+  console.log(`[Review Atlas] Sorted reviews by ${sortBy}`);
   // Maps tears down and rebuilds the list after a sort change.
   await sleep(timeoutMs);
   return true;
@@ -166,7 +166,7 @@ function clickMoreReviewsButton(panel: HTMLElement | null): boolean {
       continue;
     }
     if (el.hidden || el.getClientRects().length === 0) continue;
-    console.log(`[GReviewSumm] Clicking "More reviews" button: "${el.textContent?.trim()}"`);
+    console.log(`[Review Atlas] Clicking "More reviews" button: "${el.textContent?.trim()}"`);
     el.click();
     return true;
   }
@@ -530,13 +530,13 @@ async function scrollAndScrapeReviews(
 
   const initialCards = getReviewCards();
   if (initialCards.length === 0) {
-    console.log('[GReviewSumm] No review cards found after tab open attempt');
+    console.log('[Review Atlas] No review cards found after tab open attempt');
     return { reviews: [], placeName: scrapePlaceName() };
   }
 
   // Resolve the scrollable review panel once and reuse it every round.
   const panel = findScrollContainer(initialCards[0]);
-  console.log(`[GReviewSumm] Scroll container: ${panel ? panel.className || '<unnamed>' : 'not found — using fallback'}`);
+  console.log(`[Review Atlas] Scroll container: ${panel ? panel.className || '<unnamed>' : 'not found — using fallback'}`);
 
   // Scrape the aggregate rating up front so the loop knows its target count.
   const aggregate = scrapePlaceAggregate();
@@ -594,14 +594,14 @@ async function scrollAndScrapeReviews(
   while (stableRounds < cfg.maxStableRounds && allReviews.length < maxReviews && !shouldStop) {
     // Stop early once we have as many reviews as Google says exist.
     if (targetCount !== null && allReviews.length >= targetCount) {
-      console.log(`[GReviewSumm] Reached Google's reported count (${targetCount}) — stopping early`);
+      console.log(`[Review Atlas] Reached Google's reported count (${targetCount}) — stopping early`);
       break;
     }
 
     if (lastCard) scrollReviewsPanel(lastCard, panel);
 
     const added = await pollForNewReviews(cfg.scrollWaitMs, cfg.pollIntervalMs);
-    console.log(`[GReviewSumm] Scroll: ${allReviews.length} unique reviews (${added} new this round)`);
+    console.log(`[Review Atlas] Scroll: ${allReviews.length} unique reviews (${added} new this round)`);
 
     if (added === 0) {
       if (shouldStop) break;
@@ -619,7 +619,7 @@ async function scrollAndScrapeReviews(
     }
   }
 
-  console.log(`[GReviewSumm] Done: ${allReviews.length} unique reviews`);
+  console.log(`[Review Atlas] Done: ${allReviews.length} unique reviews`);
 
   // Reuse the pre-loop aggregate; only re-scrape if it came back empty.
   const { googleRating, googleReviewCount } =

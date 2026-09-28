@@ -14,7 +14,7 @@ Live URLs to use in the listing (available once GitHub Pages is switched on):
 ## Item name
 
 ```
-GReviewSumm – AI Review Summarizer
+Review Atlas – AI Review Summarizer
 ```
 
 ## Short description (132 char max)
@@ -38,7 +38,7 @@ English
 ## Detailed description
 
 ```
-Busy places have hundreds of reviews you will never scroll through. GReviewSumm reads them for you and returns what people actually keep saying.
+Busy places have hundreds of reviews you will never scroll through. Review Atlas reads them for you and returns what people actually keep saying.
 
 WHAT YOU GET
 • Pros and cons — specific recurring points drawn from the review text, not a star average
@@ -63,7 +63,7 @@ CONTROLS
 • Full sampling control for local models: temperature, top-p, top-k, repeat penalty, context window
 
 PRIVACY
-There is no GReviewSumm server. Nothing is sent to us, because there is nowhere to send it.
+There is no Review Atlas server. Nothing is sent to us, because there is nowhere to send it.
 • Review text goes only to the AI provider you selected — with a local model, nowhere at all
 • API keys are AES-GCM-256 encrypted in local storage and never shown back to you
 • No analytics, no telemetry, no tracking, no ads, no account
@@ -78,7 +78,7 @@ Source code: https://github.com/lauming1111/ReviewAtlas
 ## Single purpose statement
 
 ```
-GReviewSumm has one purpose: to summarize the customer reviews shown on a Google
+Review Atlas has one purpose: to summarize the customer reviews shown on a Google
 Maps place page into pros, cons, themes and overall sentiment, using an AI model
 that the user selects and configures.
 ```
@@ -185,6 +185,35 @@ self-hosted within the extension rather than loaded from a CDN.
 
 ---
 
+## Notes for the reviewer
+
+> Paste into the dashboard's reviewer-notes field. An extension that needs the user's
+> own AI provider is easy to reject as "could not test", so spell the path out.
+
+```
+No account or sign-in is needed, and the extension has no server of its own. It
+needs one AI backend, chosen by the user, to produce a summary.
+
+Quickest way to test with no downloads:
+1. Open the extension's options (the gear icon in its popup).
+2. Choose any hosted provider — Google Gemini and Groq both issue a free API key.
+3. Paste the key and press "Test connection". It should report success.
+4. Press Save.
+5. Open any business on Google Maps, for example
+   https://www.google.com/maps/place/Tartine+Bakery/
+6. Click the extension icon, then "Analyze Reviews". The reviews panel scrolls
+   itself while reviews are collected, then the summary appears.
+
+Alternative with no API key: install Ollama (https://ollama.com), run
+"ollama pull llama3.2", choose Ollama in settings, then follow steps 4-6. The
+review text then never leaves the machine.
+
+If a temporary API key would help the review, contact minglau0315@gmail.com and
+one will be provided.
+```
+
+---
+
 ## Data usage disclosures (Privacy practices tab)
 
 | Question | Answer |
@@ -212,7 +241,7 @@ Certifications (all true for this extension):
 | Asset | Requirement | Status |
 |---|---|---|
 | Store icon | 128×128 PNG | `icons/icon128.png` |
-| Screenshots | 1280×800 or 640×400, at least 1 | 5 in `store-assets/` |
+| Screenshots | 1280×800 or 640×400, at least 1 | 5 in `store-assets/` — **stale**: they show the old name in the popup header and predate the version line |
 | Small promo tile | 440×280 | `store-assets/promo-440x280.png` |
 | Privacy policy URL | required | pending Pages being enabled |
 
@@ -220,8 +249,16 @@ Certifications (all true for this extension):
 
 ## Before submitting
 
-1. Enable GitHub Pages (**Settings → Pages → main branch → /docs**) and confirm the
-   privacy URL loads over HTTPS.
-2. Replace the donation placeholders on the landing page, or delete that section.
-3. Update the landing page's install CTA to the store URL once the listing is live.
-4. Zip **the build output**, not the source: `cd review-atlas-extension && zip -r ../greviewsumm-1.3.0.zip .`
+1. **Retake the screenshots.** The five in `store-assets/` still show the old name.
+   Load the built extension, capture at 1280×800, and keep any API key out of frame.
+2. **Enable GitHub Pages** (**Settings → Pages → branch `main` → `/docs`**) and confirm
+   `https://lauming1111.github.io/ReviewAtlas/privacy.html` loads over HTTPS. The store
+   will not accept a privacy policy URL that 404s, and the site files must be on `main`.
+3. **Developer account**: register at the Developer Dashboard and pay the one-time
+   US$5 fee, then verify the publisher email that will be shown on the listing.
+4. **Trader status**: the dashboard requires a trader / non-trader declaration.
+   Declaring trader means publishing a contact address and phone number on the listing.
+5. Package the build output, never the source tree:
+   `cd review-atlas-extension && zip -r ../review-atlas-1.4.0.zip . -x "*.DS_Store"`
+6. After the listing goes live: point the landing page's install CTA and the guide's
+   **Add to Chrome** button at the store URL (both are marked with a TODO comment).

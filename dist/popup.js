@@ -116,7 +116,7 @@ async function getSettings() {
                     }
                     catch {
                         // Salt was reset or blob is corrupt — clear this key so the user re-enters it
-                        console.warn(`[GReviewSumm] Could not decrypt ${field} — clearing it.`);
+                        console.warn(`[Review Atlas] Could not decrypt ${field} — clearing it.`);
                         settings[field] = undefined;
                     }
                 }
@@ -1071,7 +1071,7 @@ async function runAnalyze(forceFresh = false) {
         ? null
         : await getCachedReviews(currentTabUrl, maxReviews, sortBy, currentPlaceName);
     if (cachedReviews) {
-        console.log(`[GReviewSumm] Reusing ${cachedReviews.reviews.length} cached reviews — skipping scrape`);
+        console.log(`[Review Atlas] Reusing ${cachedReviews.reviews.length} cached reviews — skipping scrape`);
         ({ reviews, googleRating, googleReviewCount } = cachedReviews);
         // The page was read again when this popup opened; prefer that over the name
         // stored with the cached review set, which may predate a scraper fix.
@@ -1122,7 +1122,7 @@ async function runAnalyze(forceFresh = false) {
         }
         catch (err) {
             stopProgressPoll();
-            console.error('[GReviewSumm] Message error:', err);
+            console.error('[Review Atlas] Message error:', err);
             showError(`Extension error: ${err}. Make sure you're on Google Maps (google.com/maps) and the page has fully loaded.`);
             return;
         }
@@ -1142,7 +1142,7 @@ async function runAnalyze(forceFresh = false) {
             return;
         }
         ({ reviews, placeName, googleRating, googleReviewCount } = reviewsResponse.payload);
-        console.log(`[GReviewSumm] Got ${reviews.length} reviews, Google rating: ${googleRating ?? 'n/a'}`);
+        console.log(`[Review Atlas] Got ${reviews.length} reviews, Google rating: ${googleRating ?? 'n/a'}`);
         setLoadingStep(2, `${reviews.length.toLocaleString()} reviews collected`);
         await setCachedReviews(currentTabUrl, sortBy, {
             reviews, placeName, googleRating, googleReviewCount, maxReviews, timestamp: Date.now(),
@@ -1167,7 +1167,7 @@ async function runAnalyze(forceFresh = false) {
         });
     }
     catch (err) {
-        console.error('[GReviewSumm] Background error:', err);
+        console.error('[Review Atlas] Background error:', err);
         showError(`Failed to summarize: ${err}`);
         return;
     }
