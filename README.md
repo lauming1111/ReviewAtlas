@@ -5,6 +5,10 @@ Runs against **any local model** — Ollama, LM Studio, llama.cpp, Jan, vLLM and
 OpenAI-compatible servers, so nothing leaves your machine — or against a cloud
 provider (OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok) if you prefer.
 
+> **Not a developer?** Start with the **[quick start guide](https://lauming1111.github.io/ReviewAtlas/guide.html)**
+> ([`docs/guide.html`](./docs/guide.html)). It covers installing, choosing an AI and reading
+> your first summary in plain language — the rest of this README assumes a terminal.
+
 ![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?logo=googlechrome&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-green)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
@@ -32,9 +36,10 @@ provider (OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok) if you prefer
 
 ## Website
 
-Landing page, setup guide, privacy policy and changelog live in [`docs/`](./docs)
-and are published with GitHub Pages:
-**<https://lauming1111.github.io/GReviewSumm/>**
+Landing page, quick start guide (written for non-technical users), setup guide,
+privacy policy and changelog live in [`docs/`](./docs) and are published with
+GitHub Pages:
+**<https://lauming1111.github.io/ReviewAtlas/>**
 
 ---
 

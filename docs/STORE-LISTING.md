@@ -5,9 +5,9 @@ the Developer Dashboard.
 
 Live URLs to use in the listing (available once GitHub Pages is switched on):
 
-- **Privacy policy:** `https://lauming1111.github.io/GReviewSumm/privacy.html` *(required)*
-- **Homepage:** `https://lauming1111.github.io/GReviewSumm/`
-- **Support:** `https://lauming1111.github.io/GReviewSumm/support.html`
+- **Privacy policy:** `https://lauming1111.github.io/ReviewAtlas/privacy.html` *(required)*
+- **Homepage:** `https://lauming1111.github.io/ReviewAtlas/`
+- **Support:** `https://lauming1111.github.io/ReviewAtlas/support.html`
 
 ---
 
@@ -69,8 +69,8 @@ There is no GReviewSumm server. Nothing is sent to us, because there is nowhere 
 • No analytics, no telemetry, no tracking, no ads, no account
 • The interface makes zero third-party requests — even the fonts are bundled
 
-Full policy: https://lauming1111.github.io/GReviewSumm/privacy.html
-Source code: https://github.com/lauming1111/GReviewSumm
+Full policy: https://lauming1111.github.io/ReviewAtlas/privacy.html
+Source code: https://github.com/lauming1111/ReviewAtlas
 ```
 
 ---
