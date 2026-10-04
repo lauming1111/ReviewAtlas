@@ -32,7 +32,7 @@
   <p>Format follows <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>.</p>
   <p>Versions follow <a href="https://semver.org/">Semantic Versioning</a>.</p>
   <h2 id="unreleased">[Unreleased]</h2>
-  <h2 id="1-4-0-2026-09-28">[1.4.0] — 2026-09-28</h2>
+  <h2 id="1-4-0-2026-10-03">[1.4.0] — 2026-10-03</h2>
   <h3>Changed</h3>
   <ul>
   <li><strong>Renamed to Review Atlas.</strong> The name, the popup header and the website follow the repository, which was renamed earlier. Storage keys keep their old names on purpose, so settings, saved API keys and cached summaries survive the update untouched</li>
@@ -47,6 +47,7 @@
   </ul>
   <h3>Fixed</h3>
   <ul>
+  <li><strong>Text from the page, the provider and the model is escaped before it reaches the popup's markup.</strong> Pros, cons, themes, staff names, the places listed in History and the model names in the picker were all interpolated into <code>innerHTML</code>. The extension's content security policy stops injected script from running, so nothing could execute, but a business whose name contains a tag — or a review that talked the model into emitting one — could still disturb the result screen</li>
   <li><strong>Every Ollama analysis failed with HTTP 403.</strong> Chrome sends <code>Origin: chrome-extension://…</code> on the extension's requests to generate a summary, and Ollama refuses any origin it does not recognise — while Test connection, a GET sent without an Origin, kept reporting success. The extension now removes that header from its own requests to your local server (a session rule via the new <code>declarativeNetRequestWithHostAccess</code> permission, which adds no install warning). The rule matches only requests this extension makes, so websites calling your Ollama still carry their Origin and are still refused</li>
   <li><strong>Reasoning models (deepseek-r1, qwen3…) never produced a summary on Ollama.</strong> Ollama turns thinking on by default for them and it shares the output budget: on deepseek-r1:8b all 2048 tokens and 100 seconds went to reasoning, the answer came back empty, and each of the three retries repeated it. Requests now send <code>think: false</code>. Thinking that a self-hosted OpenAI-compatible server writes inline (<code>&lt;think&gt;…&lt;/think&gt;</code>) is also stripped before the JSON is read</li>
   <li><strong>The Ollama model field hid your installed models.</strong> It was a text field with suggestions, and Chrome only suggests entries that match what the field already holds — so with the default <code>llama3.2:latest</code> in it and a different model installed, the list looked empty and Test connection seemed to do nothing. It is now a dropdown of the models installed on the server, loaded as soon as Settings opens; a stored model that is not installed is marked as such and replaced by one that is</li>
