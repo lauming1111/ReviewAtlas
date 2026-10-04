@@ -11,7 +11,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.4.0] — 2026-09-28
+## [1.4.0] — 2026-10-03
 
 ### Changed
 - **Renamed to Review Atlas.** The name, the popup header and the website follow the repository, which was renamed earlier. Storage keys keep their old names on purpose, so settings, saved API keys and cached summaries survive the update untouched
@@ -23,6 +23,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - **The AI provider is checked before any reviews are collected.** An analysis used to spend up to a minute scrolling Google Maps and only then report that Ollama was not running or that an API key was wrong. The provider's model-list endpoint — free, no tokens — is now called first, the loading screen says which provider it is checking, and a failure stops the run before the page is touched. That endpoint only proves model listing works, and a local server can answer chat without exposing `/models`, so the error screen also offers **Analyze anyway**, which skips the check for the rest of that popup session
 
 ### Fixed
+- **Text from the page, the provider and the model is escaped before it reaches the popup's markup.** Pros, cons, themes, staff names, the places listed in History and the model names in the picker were all interpolated into `innerHTML`. The extension's content security policy stops injected script from running, so nothing could execute, but a business whose name contains a tag — or a review that talked the model into emitting one — could still disturb the result screen
 - **Every Ollama analysis failed with HTTP 403.** Chrome sends `Origin: chrome-extension://…` on the extension's requests to generate a summary, and Ollama refuses any origin it does not recognise — while Test connection, a GET sent without an Origin, kept reporting success. The extension now removes that header from its own requests to your local server (a session rule via the new `declarativeNetRequestWithHostAccess` permission, which adds no install warning). The rule matches only requests this extension makes, so websites calling your Ollama still carry their Origin and are still refused
 - **Reasoning models (deepseek-r1, qwen3…) never produced a summary on Ollama.** Ollama turns thinking on by default for them and it shares the output budget: on deepseek-r1:8b all 2048 tokens and 100 seconds went to reasoning, the answer came back empty, and each of the three retries repeated it. Requests now send `think: false`. Thinking that a self-hosted OpenAI-compatible server writes inline (`<think>…</think>`) is also stripped before the JSON is read
 - **The Ollama model field hid your installed models.** It was a text field with suggestions, and Chrome only suggests entries that match what the field already holds — so with the default `llama3.2:latest` in it and a different model installed, the list looked empty and Test connection seemed to do nothing. It is now a dropdown of the models installed on the server, loaded as soon as Settings opens; a stored model that is not installed is marked as such and replaced by one that is

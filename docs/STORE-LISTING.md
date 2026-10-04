@@ -247,18 +247,45 @@ Certifications (all true for this extension):
 
 ---
 
-## Before submitting
+## Ready
 
-1. **Retake the screenshots.** The five in `store-assets/` still show the old name.
-   Load the built extension, capture at 1280×800, and keep any API key out of frame.
-2. **Enable GitHub Pages** (**Settings → Pages → branch `main` → `/docs`**) and confirm
-   `https://lauming1111.github.io/ReviewAtlas/privacy.html` loads over HTTPS. The store
-   will not accept a privacy policy URL that 404s, and the site files must be on `main`.
-3. **Developer account**: register at the Developer Dashboard and pay the one-time
-   US$5 fee, then verify the publisher email that will be shown on the listing.
-4. **Trader status**: the dashboard requires a trader / non-trader declaration.
-   Declaring trader means publishing a contact address and phone number on the listing.
-5. Package the build output, never the source tree:
-   `cd review-atlas-extension && zip -r ../review-atlas-1.4.0.zip . -x "*.DS_Store"`
-6. After the listing goes live: point the landing page's install CTA and the guide's
-   **Add to Chrome** button at the store URL (both are marked with a TODO comment).
+- [x] Screenshots and promo tile regenerated from the current popup at v1.4.0 —
+      `tools/make-store-assets.py` rebuilds all six in seconds after a UI change
+- [x] GitHub Pages live on `main` → `/docs`; the privacy, support and homepage URLs
+      above all return 200 over HTTPS
+- [x] Developer account created
+- [x] Package built and verified: `review-atlas-1.4.0.zip`, 157 KB, 16 files, no
+      remote code, fonts bundled, manifest reads `Review Atlas – AI Review Summarizer` / `1.4.0`
+- [x] Every permission in the manifest is used by the code, and every host in
+      `host_permissions` is one the code actually contacts — unused entries are a
+      common rejection
+- [x] Nothing logs an API key
+
+## Still to do, in the dashboard
+
+1. **Account**: pay the one-time US$5 fee if the profile has not taken it, set the
+   publisher display name, and verify the contact email shown on the listing.
+2. **Trader status**: the declaration is required before an item can publish.
+   Declaring trader means publishing a contact address and phone number publicly.
+3. **New item** → upload `review-atlas-1.4.0.zip` (the zip, not the folder).
+4. **Store listing**: detailed description, category Productivity, language English,
+   the five screenshots, the promo tile, homepage and support URLs — all above.
+5. **Privacy**: privacy policy URL, single purpose, a justification per permission,
+   remote code "no", the data-use answers and the three certifications.
+6. **Distribution**: free, public or unlisted, all regions.
+7. Paste the **reviewer notes** into the submission notes, then submit.
+8. After the listing goes live: point the landing page's install CTA and the guide's
+   **Add to Chrome** button at the store URL (both are marked with a TODO comment),
+   and publish the drafted GitHub release.
+
+## Repackaging
+
+Only needed if the extension changes:
+
+```
+npm run build
+cd review-atlas-extension && zip -r ../review-atlas-<version>.zip . -x "*.DS_Store"
+```
+
+A new upload always starts a fresh review, so do not repackage while a submission
+is in the queue.

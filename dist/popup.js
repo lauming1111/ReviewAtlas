@@ -414,8 +414,20 @@ function renderModelOptions(provider, models) {
     if (!list)
         return;
     list.innerHTML = models
-        .map((m) => `<option value="${m.replace(/"/g, '&quot;')}"></option>`)
+        .map((m) => `<option value="${escapeHtml(m)}"></option>`)
         .join('');
+}
+/**
+ * Escape text that came from the page, the provider or the model before it is
+ * put into innerHTML. The popup's CSP blocks inline script, so the exposure is
+ * markup rather than code — but a place named with a tag, or a review that
+ * talks the model into emitting one, could still rearrange the result screen.
+ */
+function escapeHtml(value) {
+    const named = {
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    };
+    return String(value).replace(/[&<>"']/g, (ch) => named[ch]);
 }
 /** One TEST_CONNECTION round-trip, with messaging failures folded into the result. */
 async function requestConnectionTest(settings) {
@@ -684,7 +696,7 @@ async function showHistory() {
         return `
       <div class="history-item ${cls}" data-key="${encodeURIComponent(key)}">
         <div style="min-width:0">
-          <div class="history-item-name">${r.placeName}</div>
+          <div class="history-item-name">${escapeHtml(r.placeName)}</div>
           <div class="history-item-meta">
             <span class="history-stars">${stars}</span>
             <span>${r.averageRating}</span>
@@ -795,17 +807,17 @@ function renderResult(data, timestamp) {
         summaryEl.textContent = data.summary;
     if (prosList) {
         prosList.innerHTML = data.pros
-            .map((p) => `<li><span class="bullet pro-bullet">✓</span>${p}</li>`)
+            .map((p) => `<li><span class="bullet pro-bullet">✓</span>${escapeHtml(p)}</li>`)
             .join('');
     }
     if (consList) {
         consList.innerHTML = data.cons
-            .map((c) => `<li><span class="bullet con-bullet">✗</span>${c}</li>`)
+            .map((c) => `<li><span class="bullet con-bullet">✗</span>${escapeHtml(c)}</li>`)
             .join('');
     }
     if (themesList) {
         themesList.innerHTML = data.topThemes
-            .map((t) => `<span class="theme-chip">${t}</span>`)
+            .map((t) => `<span class="theme-chip">${escapeHtml(t)}</span>`)
             .join('');
     }
     const staffSection = document.getElementById('staff-section');
@@ -815,7 +827,7 @@ function renderResult(data, timestamp) {
         staffSection.hidden = staff.length === 0;
     if (staffList) {
         staffList.innerHTML = staff
-            .map((name) => `<span class="staff-chip">★ ${name}</span>`)
+            .map((name) => `<span class="staff-chip">★ ${escapeHtml(name)}</span>`)
             .join('');
     }
     if (analyzedAt) {
