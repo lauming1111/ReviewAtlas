@@ -250,19 +250,55 @@
     });
   });
 
+  // One toast, created on first use and reused after. Built here rather than in
+  // the markup so a page with JavaScript off carries no empty furniture.
+  var toast = null;
+  var toastTimer = null;
+
+  function showToast(message) {
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+    }
+    var tick = document.createElement('span');
+    tick.className = 'toast-tick';
+    tick.setAttribute('aria-hidden', 'true');
+    tick.textContent = '\u2713';
+    toast.textContent = '';
+    toast.appendChild(tick);
+    toast.appendChild(document.createTextNode(message));
+
+    // Sit clear of the sticky header instead of over its links. The nav wraps to
+    // a second row on narrow screens, so the offset is measured at show time
+    // rather than assumed.
+    var header = document.querySelector('.site-header');
+    var below = header ? Math.round(header.getBoundingClientRect().bottom) : 0;
+    toast.style.top = Math.max(18, below + 12) + 'px';
+
+    // Drop the class, flush the style, re-add it: a toast already on screen then
+    // animates again rather than sitting there unchanged. The offsetWidth read
+    // is the flush — without it the browser coalesces both writes and nothing
+    // moves. requestAnimationFrame would do the same job only when frames are
+    // actually being produced, which is not guaranteed.
+    clearTimeout(toastTimer);
+    toast.removeAttribute('data-visible');
+    void toast.offsetWidth;
+    toast.setAttribute('data-visible', '');
+    toastTimer = setTimeout(function () { toast.removeAttribute('data-visible'); }, 5000);
+  }
+
   // Kept out of the markup so a crawler reading the HTML finds no address.
   document.querySelectorAll('.donate-reveal').forEach(function (btn) {
     var address = null;
     var status = btn.parentElement.querySelector('.donate-status');
-    var clearTimer = null;
 
-    // A confirmation clears itself, so copying a second time reads as a fresh
-    // one. Instructions stay put — they are there to be followed, not noticed.
-    function say(message, sticky) {
-      if (!status) return;
-      clearTimeout(clearTimer);
-      status.textContent = message;
-      if (!sticky) clearTimer = setTimeout(function () { status.textContent = ''; }, 4000);
+    // Only instructions land here now, and they stay until they stop applying.
+    // The confirmation goes to the toast.
+    function say(message) {
+      if (status) status.textContent = message;
     }
 
     // Every way of copying can fail, and sending to a half-copied address loses
@@ -280,7 +316,7 @@
     function copyFailed() {
       say(selectAddress()
         ? 'Copying was blocked — the address is selected, press Ctrl+C (Cmd+C on a Mac).'
-        : 'Copying was blocked — select the address and copy it by hand.', true);
+        : 'Copying was blocked — select the address and copy it by hand.');
     }
 
     btn.addEventListener('click', function () {
@@ -288,7 +324,7 @@
         address = atob(btn.getAttribute('data-a')).split('').reverse().join('');
         btn.textContent = address;
         btn.setAttribute('data-revealed', '');
-        say('Click it to copy.', true);
+        say('Click it to copy.');
         return;
       }
       if (!navigator.clipboard) {
@@ -296,7 +332,8 @@
         return;
       }
       navigator.clipboard.writeText(address).then(function () {
-        say('Copied');
+        say('');
+        showToast('Address copied');
       }, copyFailed);
     });
   });
