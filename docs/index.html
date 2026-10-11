@@ -254,18 +254,50 @@
   document.querySelectorAll('.donate-reveal').forEach(function (btn) {
     var address = null;
     var status = btn.parentElement.querySelector('.donate-status');
+    var clearTimer = null;
+
+    // A confirmation clears itself, so copying a second time reads as a fresh
+    // one. Instructions stay put — they are there to be followed, not noticed.
+    function say(message, sticky) {
+      if (!status) return;
+      clearTimeout(clearTimer);
+      status.textContent = message;
+      if (!sticky) clearTimer = setTimeout(function () { status.textContent = ''; }, 4000);
+    }
+
+    // Every way of copying can fail, and sending to a half-copied address loses
+    // the money. Selecting it leaves the reader a manual Ctrl+C.
+    function selectAddress() {
+      var selection = window.getSelection();
+      if (!selection) return false;
+      var range = document.createRange();
+      range.selectNodeContents(btn);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return true;
+    }
+
+    function copyFailed() {
+      say(selectAddress()
+        ? 'Copying was blocked — the address is selected, press Ctrl+C (Cmd+C on a Mac).'
+        : 'Copying was blocked — select the address and copy it by hand.', true);
+    }
+
     btn.addEventListener('click', function () {
       if (!address) {
         address = atob(btn.getAttribute('data-a')).split('').reverse().join('');
         btn.textContent = address;
         btn.setAttribute('data-revealed', '');
-        if (status) status.textContent = 'Click it to copy.';
+        say('Click it to copy.', true);
         return;
       }
-      if (!navigator.clipboard) return;
+      if (!navigator.clipboard) {
+        copyFailed();
+        return;
+      }
       navigator.clipboard.writeText(address).then(function () {
-        if (status) status.textContent = 'Copied';
-      });
+        say('Copied');
+      }, copyFailed);
     });
   });
 </script>
