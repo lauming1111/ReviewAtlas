@@ -10,3 +10,7 @@ review-atlas-extension/
 *.zip
 *.js.map
 *.tsbuildinfo
+
+# Rendered video and its check stills — regenerate with tools/make-promo-video.mjs
+*.mp4
+store-assets/promo-stills/

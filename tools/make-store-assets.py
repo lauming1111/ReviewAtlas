@@ -28,6 +28,10 @@ VERSION = json.loads((REPO / 'manifest.json').read_text(encoding='utf-8'))['vers
 PLACE = 'Harbour View Bistro'
 
 SHOT_CSS = """
+  /* A still shows the settled screen. The loading screen's spinner never stops,
+     so headless Chrome's virtual-time budget never settles and the capture fires
+     partway through the screen's fade-in — washing that one shot out. */
+  .screen { animation: none; }
   html, body.shot { width: 1280px; height: 800px; max-height: none; margin: 0; padding: 0; overflow: hidden; }
   body.shot {
     display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 72px;
@@ -129,7 +133,11 @@ SHOTS = [
   if (status) status.classList.add('ok');
   const settings = document.querySelector('[data-screen="settings"]');
   const anchor = document.querySelector('#ollama-config');
-  requestAnimationFrame(() => { if (anchor) settings.scrollTop = anchor.offsetTop - 92; });
+  // Measured against the scrolling screen itself. offsetTop counts from the
+  // offsetParent, which was the screen only while its fade-in transform ran.
+  requestAnimationFrame(() => {
+    if (anchor) settings.scrollTop = anchor.getBoundingClientRect().top - settings.getBoundingClientRect().top - 92;
+  });
 """,
     ),
     dict(
