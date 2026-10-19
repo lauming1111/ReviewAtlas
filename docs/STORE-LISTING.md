@@ -127,39 +127,33 @@ address, so web pages keep their Origin header and the server's protection again
 websites is unchanged. No other request is modified, blocked or redirected.
 ```
 
-### Host permission — `https://www.google.com/*`, `https://maps.google.com/*`
+### Host permissions — all of them, one field
+
+> The dashboard has a **single** host-permission justification field, not one per
+> host. Paste this whole block into it.
 
 ```
-These are the pages whose reviews the extension summarizes. The content script
-runs on Google Maps place pages and Google Search knowledge panels in order to
-read the visible review text, ratings and place details.
-```
+The extension contacts three groups of hosts, and nothing else.
 
-### Host permission — `http://localhost/*`, `http://127.0.0.1/*`
+1. https://www.google.com/* and https://maps.google.com/*
+These are the pages whose reviews are summarized. The content script reads the
+visible review text, rating and place name from a Google Maps place page or a
+Google Search knowledge panel, and only after the user clicks "Analyze Reviews"
+in the extension popup.
 
-```
+2. http://localhost/* and http://127.0.0.1/*
 Required to send review text to an AI model running locally on the user's own
-machine (Ollama on port 11434, LM Studio on 1234, llama.cpp on 8080, and similar).
-This is the privacy-preserving default: when a local model is used, review text
-never leaves the user's computer.
-```
+machine (Ollama on port 11434, LM Studio on 1234, llama.cpp on 8080, and
+similar). This is the privacy-preserving default: when a local model is used,
+review text never leaves the user's computer.
 
-### Host permissions — the five provider APIs
+3. api.openai.com, api.anthropic.com, generativelanguage.googleapis.com,
+api.groq.com and api.x.ai
+Hosted AI providers. Exactly one of these is contacted per analysis - the single
+provider the user selected in settings, using an API key the user supplied for
+that provider. The others are never contacted.
 
-```
-api.openai.com, api.anthropic.com, generativelanguage.googleapis.com,
-api.groq.com and api.x.ai are contacted only to generate a summary, and only for
-the single provider the user has selected in settings. The user supplies their own
-API key for that provider. No other host among these is ever contacted.
-```
-
-### Optional host permissions — `http://*/*`, `https://*/*`
-
-> This is the entry reviewers scrutinise hardest. The justification below is
-> accurate — the broad pattern is declared, but the request made at runtime is
-> always for one concrete origin.
-
-```
+OPTIONAL host permissions: http://*/* and https://*/*
 These are declared as OPTIONAL host permissions and are never requested at
 install time.
 
@@ -171,9 +165,9 @@ optional pattern must be broad.
 
 At runtime the extension never requests this broad pattern. When the user saves a
 custom endpoint, chrome.permissions.request() is called with only that single
-origin (for example https://my-server.example.com/*), and only when the address is
-not localhost. Users who do not configure a self-hosted endpoint are never asked
-for any additional permission.
+origin (for example https://my-server.example.com/*), and only when the address
+is not localhost or 127.0.0.1. Users who do not configure a self-hosted endpoint
+are never asked for any additional permission.
 ```
 
 ### Remote code
