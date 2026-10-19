@@ -37,6 +37,12 @@ English
 
 ## Detailed description
 
+> **Do not list runtime or product names.** Version 1.4.0 was rejected for
+> keyword spam (ref. *Yellow Argon*) over a line naming seven local servers.
+> Describe the capability ("any local server that speaks the OpenAI API")
+> instead. The hosted-provider sentence passed review as written; leave it.
+> Screenshot captions fall under the same policy.
+
 ```
 Busy places have hundreds of reviews you will never scroll through. Review Atlas reads them for you and returns what people actually keep saying.
 
@@ -47,12 +53,7 @@ WHAT YOU GET
 • Overall sentiment and the real review count analyzed
 
 BRING YOUR OWN MODEL
-Point it at a model running on your own computer and the review text never leaves your machine:
-• Ollama
-• LM Studio, llama.cpp, Jan, vLLM, KoboldCpp, LocalAI, text-generation-webui
-• Any other OpenAI-compatible server
-
-Pick your runtime and its default address is filled in for you. One click tests the connection and loads the model list from the server itself.
+Point it at an AI model running on your own computer and the review text never leaves your machine. Ollama works out of the box, and so does any local server that speaks the OpenAI API. Pick your runtime and its usual address is filled in for you; one click tests the connection and loads the model list from the server itself.
 
 Prefer a hosted API? OpenAI, Anthropic Claude, Google Gemini, Groq and xAI Grok are supported too.
 
