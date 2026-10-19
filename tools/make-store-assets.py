@@ -123,8 +123,8 @@ SHOTS = [
     dict(
         name='screenshot-3-local-model',
         badge='🔒 Local-first',
-        headline='A model running on<br />your own machine.',
-        sub='Ollama, LM Studio, llama.cpp, Jan, vLLM and friends. Pick the runtime, the address fills itself in, and the model list loads from your server.',
+        headline='A model running<br />on your machine.',
+        sub='Ollama, or any local server that speaks the OpenAI API. Pick the runtime, the address fills itself in, and the model list loads from your server.',
         fill="""
   show('settings');
   document.querySelectorAll('#ai-provider-group .scope-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
