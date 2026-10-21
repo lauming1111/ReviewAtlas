@@ -254,13 +254,14 @@ Certifications (all true for this extension):
 
 ## Ready
 
-- [x] Screenshots and promo tile regenerated from the current popup at v1.4.0 —
-      `tools/make-store-assets.py` rebuilds all six in seconds after a UI change
+- [ ] Screenshots and promo tile regenerated from the current popup at v1.5.0 —
+      `tools/make-store-assets.py` rebuilds all six in seconds after a UI change.
+      The v1.4.0 set predates the Built-in tile; the providers shot shows seven
 - [x] GitHub Pages live on `main` → `/docs`; the privacy, support and homepage URLs
       above all return 200 over HTTPS
 - [x] Developer account created
-- [x] Package built and verified: `review-atlas-1.4.0.zip`, 157 KB, 16 files, no
-      remote code, fonts bundled, manifest reads `Review Atlas – AI Review Summarizer` / `1.4.0`
+- [ ] Package built and verified: `review-atlas-1.5.0.zip`, no remote code, fonts
+      bundled, manifest reads `Review Atlas – AI Review Summarizer` / `1.5.0`
 - [x] Every permission in the manifest is used by the code, and every host in
       `host_permissions` is one the code actually contacts — unused entries are a
       common rejection
@@ -272,7 +273,7 @@ Certifications (all true for this extension):
    publisher display name, and verify the contact email shown on the listing.
 2. **Trader status**: the declaration is required before an item can publish.
    Declaring trader means publishing a contact address and phone number publicly.
-3. **New item** → upload `review-atlas-1.4.0.zip` (the zip, not the folder).
+3. **New item** → upload `review-atlas-1.5.0.zip` (the zip, not the folder).
 4. **Store listing**: detailed description, category Productivity, language English,
    the five screenshots, the promo tile, homepage and support URLs — all above.
 5. **Privacy**: privacy policy URL, single purpose, a justification per permission,
