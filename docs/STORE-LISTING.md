@@ -254,14 +254,13 @@ Certifications (all true for this extension):
 
 ## Ready
 
-- [ ] Screenshots and promo tile regenerated from the current popup at v1.5.0 —
-      `tools/make-store-assets.py` rebuilds all six in seconds after a UI change.
-      The v1.4.0 set predates the Built-in tile; the providers shot shows seven
+- [x] Screenshots and promo tile regenerated from the current popup at v1.5.0 —
+      `tools/make-store-assets.py` rebuilds all six in seconds after a UI change
 - [x] GitHub Pages live on `main` → `/docs`; the privacy, support and homepage URLs
       above all return 200 over HTTPS
 - [x] Developer account created
-- [ ] Package built and verified: `review-atlas-1.5.0.zip`, no remote code, fonts
-      bundled, manifest reads `Review Atlas – AI Review Summarizer` / `1.5.0`
+- [x] Package built and verified: `review-atlas-1.5.0.zip`, 166 KB, 18 files, no
+      remote code, fonts bundled, manifest reads `Review Atlas – AI Review Summarizer` / `1.5.0`
 - [x] Every permission in the manifest is used by the code, and every host in
       `host_permissions` is one the code actually contacts — unused entries are a
       common rejection

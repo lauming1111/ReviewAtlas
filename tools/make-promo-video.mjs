@@ -327,9 +327,10 @@ const STAGE_JS = String.raw`
     SCROLL = { cons: Math.min(max, Math.max(0, consTop - 70)), max };
   }
 
-  const PROVIDERS = ['ollama', 'openai', 'anthropic', 'gemini', 'groq', 'xai', 'custom', 'ollama'];
+  const PROVIDERS = ['builtin', 'ollama', 'openai', 'anthropic', 'gemini', 'groq', 'xai', 'custom', 'builtin'];
   const PROVIDER_START = 31.3;
-  const PROVIDER_STEP = 0.5;
+  // Eight steps land on the last tile at 34.9s, before the popup fades at 35.4s.
+  const PROVIDER_STEP = 0.45;
 
   const cursor = $('.cursor');
   const ripple = $('.ripple');
@@ -578,8 +579,8 @@ function buildStage() {
   </div>
   <div class="caption">
     <span class="badge">🔒 Your choice of AI</span>
-    <h2>Your own computer —<br />or the AI you<br />already use.</h2>
-    <p>With Ollama or LM Studio the reviews never leave your machine. OpenAI, Claude, Gemini, Groq and Grok work too.</p>
+    <h2>In your browser —<br />or the AI you<br />already use.</h2>
+    <p>The browser's on-device model needs no setup, and the reviews never leave your machine. Ollama, LM Studio, OpenAI, Claude, Gemini, Groq and Grok work too.</p>
   </div>
 
   <div class="sped-up"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 2l5 4-5 4zM6 2l5 4-5 4z" fill="currentColor"/></svg>Sped up</span></div>
