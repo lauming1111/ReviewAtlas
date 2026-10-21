@@ -72,7 +72,10 @@ async function getDerivedKey() {
     const password = chrome.runtime.id + PEPPER;
     const enc = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-    _cachedKey = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    _cachedKey = await crypto.subtle.deriveKey(
+    // TS 5.7+ types a bare Uint8Array as possibly SharedArrayBuffer-backed,
+    // which BufferSource rejects; ours never are.
+    { name: 'PBKDF2', salt: salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
     return _cachedKey;
 }
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -103,7 +106,8 @@ export async function decryptApiKey(encoded) {
     const iv = fromBase64(rest.slice(0, colonAt));
     const ciphertext = fromBase64(rest.slice(colonAt + 1));
     const key = await getDerivedKey();
-    const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+    const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, // casts: see getDerivedKey()
+    key, ciphertext);
     return new TextDecoder().decode(plainBuf);
 }
 /** Returns true when the string is a blob produced by encryptApiKey(). */
