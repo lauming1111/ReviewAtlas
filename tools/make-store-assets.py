@@ -111,13 +111,23 @@ SHOTS = [
     dict(
         name='screenshot-2-providers',
         badge='◆ Your choice of AI',
-        headline='Seven ways to answer.<br />One is your laptop.',
-        sub='OpenAI, Claude, Gemini, Groq and Grok — or a model running on your own machine, where the review text never leaves.',
+        headline='Eight ways to answer.<br />One needs no setup.',
+        sub='The on-device model built into the browser works straight after install, and the review text never leaves. Or choose OpenAI, Claude, Gemini, Groq or Grok.',
         fill="""
   show('settings');
-  document.querySelectorAll('#ai-provider-group .scope-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#ai-provider-group .scope-btn').forEach((b) => b.classList.toggle('active', b.dataset.value === 'builtin'));
+  document.getElementById('builtin-config').hidden = false;
+  document.getElementById('ollama-config').hidden = true;
+  set('#builtin-test-status', 'Ready · on-device model installed');
+  document.querySelector('#builtin-test-status')?.classList.add('ok');
   const settings = document.querySelector('[data-screen="settings"]');
-  requestAnimationFrame(() => { settings.scrollTop = 0; });
+  // Just far enough that the Check availability row is whole; the Built-in
+  // tile at the top of the grid stays in view.
+  const row = document.getElementById('builtin-test-status')?.parentElement;
+  requestAnimationFrame(() => {
+    const over = row ? row.getBoundingClientRect().bottom - settings.getBoundingClientRect().bottom + 18 : 0;
+    settings.scrollTop = Math.max(0, over);
+  });
 """,
     ),
     dict(
@@ -127,7 +137,7 @@ SHOTS = [
         sub='Ollama, or any local server that speaks the OpenAI API. Pick the runtime, the address fills itself in, and the model list loads from your server.',
         fill="""
   show('settings');
-  document.querySelectorAll('#ai-provider-group .scope-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#ai-provider-group .scope-btn').forEach((b) => b.classList.toggle('active', b.dataset.value === 'ollama'));
   set('#ollama-test-status', '✓ Connected · 3 models available');
   const status = document.querySelector('#ollama-test-status');
   if (status) status.classList.add('ok');
