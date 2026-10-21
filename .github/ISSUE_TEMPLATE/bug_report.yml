@@ -38,7 +38,7 @@ body:
     attributes:
       label: Extension version
       description: Shown in the popup header, next to the name.
-      placeholder: "1.4.0"
+      placeholder: "1.5.0"
     validations:
       required: true
 
