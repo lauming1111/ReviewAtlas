@@ -102,6 +102,13 @@ export const AI_DEFAULTS = {
   /** Default xAI (Grok) model */
   XAI_MODEL: 'grok-3-mini-latest',
 
+  /**
+   * Name for the browser's built-in on-device model. Not selectable — the
+   * browser decides which model it ships — so it is used only in the summary
+   * cache key and in logs.
+   */
+  BUILTIN_MODEL: 'gemini-nano',
+
   // ─── Ollama local model parameters ──────────────────────────────────────────
 
   /**
@@ -123,6 +130,29 @@ export const AI_DEFAULTS = {
 
   /** Repeat penalty — discourages repetition (1.0 = off) */
   OLLAMA_REPEAT_PENALTY: 1.1,
+} as const;
+
+// ─── Built-in on-device model ────────────────────────────────────────────────
+
+export const BUILTIN = {
+  /** Sampling temperature, clamped to the model's own maximum when it reports one */
+  TEMPERATURE: 0.3,
+
+  /**
+   * Tokens of the context window kept free for the answer. The model reports
+   * its window size at runtime, so the review budget is what remains.
+   */
+  OUTPUT_RESERVE_TOKENS: 1024,
+
+  /** Rounds of measure-and-shrink before the prompt is sent as it stands */
+  FIT_ATTEMPTS: 4,
+
+  /**
+   * Abort a prompt that has not answered within this many ms. Longer than
+   * REQUEST_TIMEOUT_MS: on a CPU-only machine one prompt can take minutes.
+   * The one-time model download is not timed.
+   */
+  REQUEST_TIMEOUT_MS: 300_000,
 } as const;
 
 // ─── Local server presets ────────────────────────────────────────────────────
@@ -150,7 +180,7 @@ export const LOCAL_PRESETS = [
  *
  * A review count alone does NOT bound prompt size — 250 verbose reviews still
  * reach ~25k tokens — so every preset carries a hard character budget too.
- * Both are enforced in background.ts (selectReviewsForPrompt / enforceCharBudget).
+ * Both are enforced in summarize.ts (selectReviewsForPrompt / enforceCharBudget).
  */
 export const ANALYSIS_DEPTHS = {
   quick:    { maxReviews: 100, maxChars: 20_000, label: 'Quick',    hint: '~100 reviews · fastest'  },
@@ -190,3 +220,16 @@ export const OUTPUT_LANGUAGES = [
   { value: 'Portuguese',          label: 'Português'  },
   { value: 'Italian',             label: 'Italiano'   },
 ] as const;
+
+/**
+ * Output languages the browser's built-in model can write, as the language
+ * tags its Prompt API accepts — that API supports only these five. Any other
+ * choice falls back to English with a notice on the result.
+ */
+export const BUILTIN_LANGUAGE_TAGS: Record<string, string> = {
+  English:  'en',
+  Japanese: 'ja',
+  Spanish:  'es',
+  French:   'fr',
+  German:   'de',
+};

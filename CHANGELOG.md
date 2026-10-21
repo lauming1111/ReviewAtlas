@@ -9,6 +9,13 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Built-in provider: summaries from the on-device model built into Chrome, with no setup.** No server to install and no API key to paste — on a capable computer the first analysis works straight after install. The reviews never leave the device: this extension makes no request for them, and Chrome fetches the model once (a few GB). That download starts at the Analyze click and runs while the reviews are being collected, with its progress on the loading screen; Settings → Built-in also has **Check availability** and **Download now**. The model writes English, Japanese, Spanish, French and German; with another output language chosen the summary comes back in English and says so. Its context window is small, so it reads fewer reviews than a server-hosted model — the result's "N of M reviews analyzed" line gives the real count. Needs a recent Chrome on Windows, macOS or Linux, about 22 GB free disk, and a GPU with more than 4 GB VRAM or 16 GB RAM
+
+### Changed
+- **New installs start on the Built-in provider where the computer can run it.** Anyone who has saved settings keeps the provider they chose
+- **A clearer first-run error where it can't.** A new install on a computer without the built-in model used to fail with "Ollama is not ready". It now says that no provider is set up yet and points to Settings: a local server, or a provider with an API key
+
 ---
 
 ## [1.4.0] — 2026-10-03

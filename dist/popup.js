@@ -1,5 +1,6 @@
 import { SCROLL_CONFIG, POPUP_CONFIG, AI_DEFAULTS, CACHE_CONFIG, ANALYSIS_DEPTHS, LOCAL_PRESETS } from './config.js';
 import { encryptApiKey, decryptApiKey } from './crypto.js';
+import { ON_DEVICE_DETAIL, abortBuiltin, builtinSupported, checkBuiltin, describeBuiltinError, startBuiltinSession, summarizeBuiltin, } from './builtin.js';
 // ─── DOM helpers ──────────────────────────────────────────────────────────────
 function $(selector) {
     return document.querySelector(selector);
@@ -74,9 +75,10 @@ const DEFAULT_SETTINGS = {
     groqModel: AI_DEFAULTS.GROQ_MODEL,
     xaiModel: AI_DEFAULTS.XAI_MODEL,
 };
-const ALL_PROVIDERS = ['ollama', 'openai', 'anthropic', 'gemini', 'groq', 'xai', 'custom'];
+const ALL_PROVIDERS = ['builtin', 'ollama', 'openai', 'anthropic', 'gemini', 'groq', 'xai', 'custom'];
 /** What each provider is called on its button in Settings. */
 const PROVIDER_LABELS = {
+    builtin: 'Built-in model',
     ollama: 'Ollama',
     openai: 'OpenAI',
     anthropic: 'Claude',
@@ -103,10 +105,28 @@ const API_KEY_FIELDS = [
     'openaiApiKey', 'anthropicApiKey', 'geminiApiKey',
     'groqApiKey', 'xaiApiKey', 'customApiKey',
 ];
+/** False until the user has saved settings once — the first-run copy keys off it. */
+let settingsEverSaved = true;
+let detectedProvider = null;
+/**
+ * The provider a profile with nothing saved starts on: the browser's built-in
+ * model where this machine can run it, else Ollama. Asked once per popup.
+ */
+function detectDefaultProvider() {
+    if (!detectedProvider) {
+        detectedProvider = (async () => builtinSupported() && (await checkBuiltin(DEFAULT_SETTINGS)).ok ? 'builtin' : 'ollama')();
+    }
+    return detectedProvider;
+}
 async function getSettings() {
     return new Promise((resolve) => {
         chrome.storage.local.get(['gReviewSummSettings'], async (result) => {
-            const stored = (result.gReviewSummSettings ?? DEFAULT_SETTINGS);
+            settingsEverSaved = result.gReviewSummSettings !== undefined;
+            // The detected default is NOT written back. Until the user saves, it is
+            // re-detected on every open, so a machine that gains the model (or loses
+            // it to disk-space eviction) gets the right one — and an existing user's
+            // saved provider is never touched.
+            const stored = (result.gReviewSummSettings ?? { ...DEFAULT_SETTINGS, aiProvider: await detectDefaultProvider() });
             const settings = { ...stored };
             for (const field of API_KEY_FIELDS) {
                 const val = stored[field];
@@ -431,6 +451,9 @@ function escapeHtml(value) {
 }
 /** One TEST_CONNECTION round-trip, with messaging failures folded into the result. */
 async function requestConnectionTest(settings) {
+    // The Prompt API exists only in a window, so the built-in model is asked here.
+    if (settings.aiProvider === 'builtin')
+        return checkBuiltin(settings);
     try {
         const response = await sendRuntimeMessage({
             type: 'TEST_CONNECTION',
@@ -475,9 +498,15 @@ async function runConnectionTest(provider, mode = 'test') {
         setTestStatus(provider, mode === 'refresh' ? 'Refreshing model list…' : 'Testing…', 'busy');
     if (refreshBtn)
         refreshBtn.disabled = true;
-    const { ok, message, models } = await requestConnectionTest(settings);
+    const { ok, message, models, availability } = await requestConnectionTest(settings);
     if (refreshBtn)
         refreshBtn.disabled = false;
+    // The download must start from a click, so offer one while there is nothing on disk.
+    if (provider === 'builtin') {
+        const downloadBtn = document.getElementById('builtin-download-btn');
+        if (downloadBtn)
+            downloadBtn.hidden = availability !== 'downloadable';
+    }
     if (!ok && mode === 'auto')
         return;
     // The list can only be reloaded from a server that just answered.
@@ -503,7 +532,7 @@ async function runConnectionTest(provider, mode = 'test') {
  */
 async function resetSettingsToDefaults() {
     const current = await getSettings();
-    const preserved = { ...DEFAULT_SETTINGS };
+    const preserved = { ...DEFAULT_SETTINGS, aiProvider: await detectDefaultProvider() };
     for (const field of API_KEY_FIELDS) {
         const val = current[field];
         if (typeof val === 'string' && val.length > 0) {
@@ -526,6 +555,9 @@ async function openSettings() {
     // straight away instead of the stored name alone.
     if ((settings.aiProvider ?? 'ollama') === 'ollama')
         void runConnectionTest('ollama', 'auto');
+    // Free and instant too — and it decides whether "Download now" is offered.
+    if (settings.aiProvider === 'builtin')
+        void runConnectionTest('builtin', 'auto');
 }
 const SUMMARY_CACHE_KEY = 'gReviewSummCache';
 const REVIEW_CACHE_KEY = 'gReviewSummReviewCache';
@@ -560,6 +592,7 @@ function activeModel(s) {
         case 'groq': return s.groqModel ?? AI_DEFAULTS.GROQ_MODEL;
         case 'xai': return s.xaiModel ?? AI_DEFAULTS.XAI_MODEL;
         case 'custom': return s.customModel ?? 'local-model';
+        case 'builtin': return AI_DEFAULTS.BUILTIN_MODEL;
         default: return s.ollamaModel ?? AI_DEFAULTS.OLLAMA_MODEL;
     }
 }
@@ -834,11 +867,13 @@ function renderResult(data, timestamp) {
         analyzedAt.textContent = timestamp ? `Analyzed ${timeAgo(timestamp)}` : '';
     }
     // parseReviewDate only understands English relative dates, so on a non-English
-    // Maps locale a time-window scope quietly behaves like "all". Say so.
+    // Maps locale a time-window scope quietly behaves like "all". Say so — and
+    // say when the built-in model wrote English instead of the chosen language.
     const warnEl = document.getElementById('result-warning');
     if (warnEl) {
-        warnEl.textContent = data.dateParseWarning ?? '';
-        warnEl.hidden = !data.dateParseWarning;
+        const warning = [data.dateParseWarning, data.providerNotice].filter(Boolean).join(' ');
+        warnEl.textContent = warning;
+        warnEl.hidden = !warning;
     }
 }
 // ─── Cancellation ────────────────────────────────────────────────────────────
@@ -849,6 +884,7 @@ async function cancelAnalysis() {
     analysisCancelled = true;
     stopProgressPoll();
     stopAllStepTimers();
+    abortBuiltin(); // stops the download wait or the prompt, whichever is running
     try {
         if (currentTabId) {
             await sendToTab(currentTabId, { type: 'STOP_REVIEWS' });
@@ -921,6 +957,16 @@ function stopAllStepTimers() {
 }
 /** Step 1's sub-label once the scroll is actually running. */
 const SCROLL_STEP_DETAIL = 'Scrolling through reviews…';
+/**
+ * Step 2's sub-label for the built-in model: download progress, then the model
+ * state. Null for every other provider.
+ */
+let builtinStepDetail = null;
+/** Built-in only: keep the latest model state for step 2, and show it now. */
+function setBuiltinDetail(text) {
+    builtinStepDetail = text;
+    setStepDetail(2, text);
+}
 /** Change a step's sub-label without restarting its timer. */
 function setStepDetail(step, detail) {
     const el = document.getElementById(`step-${step}-detail`);
@@ -953,7 +999,7 @@ function setLoadingStep(step, detail) {
             d1.textContent = detail;
         s2?.classList.replace('step-pending', 'step-active') || s2?.classList.add('step-active');
         if (d2)
-            d2.textContent = 'Summarizing with AI…';
+            d2.textContent = builtinStepDetail ?? 'Summarizing with AI…';
         if (summarizeNowBtn)
             summarizeNowBtn.hidden = true;
         startStepTimer(2);
@@ -1068,6 +1114,21 @@ async function runAnalyze(forceFresh = false) {
         showError('Cannot access current tab.');
         return;
     }
+    // The built-in model is checked here instead of over TEST_CONNECTION, and its
+    // session starts now — inside the click's user activation, which the one-time
+    // download needs — without being awaited, so the download overlaps the scrape.
+    builtinStepDetail = null;
+    if (settings.aiProvider === 'builtin') {
+        const builtin = await checkBuiltin(settings);
+        if (analysisCancelled)
+            return;
+        if (!builtin.ok) {
+            showError(`${providerLabel(settings)} is not ready — no reviews were scraped. ${builtin.message}`);
+            return;
+        }
+        builtinStepDetail = ON_DEVICE_DETAIL;
+        void startBuiltinSession(settings, setBuiltinDetail);
+    }
     // reviewCount is now the scrape ceiling in every mode, capped by MAX_REVIEWS_ALL.
     const maxReviews = Math.min(settings.reviewCount, SCROLL_CONFIG.MAX_REVIEWS_ALL);
     // 'all' keeps Maps' relevance order; every other scope is time-based and
@@ -1094,7 +1155,7 @@ async function runAnalyze(forceFresh = false) {
         // Scraping is the minute-long half, and it is wasted if the provider is
         // down or the key is wrong — that used to surface only after the scroll.
         // Every provider's model-list endpoint is free, so this costs one request.
-        if (!providerCheckOverridden) {
+        if (!providerCheckOverridden && settings.aiProvider !== 'builtin') {
             const label = providerLabel(settings);
             const summarizeNow = document.getElementById('summarize-now-btn');
             if (summarizeNow)
@@ -1104,6 +1165,13 @@ async function runAnalyze(forceFresh = false) {
             if (analysisCancelled)
                 return;
             if (!connection.ok) {
+                // Nothing saved yet, and the built-in model was not offered because it
+                // cannot run here — the Ollama default is a guess, not the user's choice.
+                if (!settingsEverSaved) {
+                    showError('No AI provider is set up yet. This computer can\'t run the browser\'s built-in model, ' +
+                        'so choose one in ⚙ Settings: a local server, or a provider with an API key.');
+                    return;
+                }
                 // Offer to go ahead anyway: the test only proves the model list works,
                 // and a local server can serve chat without exposing /models.
                 const detail = connection.message.trim();
@@ -1171,28 +1239,51 @@ async function runAnalyze(forceFresh = false) {
         text: r.text,
         ...(needsDate && r.date !== undefined ? { date: r.date } : {}),
     }));
-    let summaryResponse;
-    try {
-        summaryResponse = await sendRuntimeMessage({
-            type: 'SUMMARIZE',
-            payload: { reviews: payloadReviews, placeName, settings, googleRating, googleReviewCount },
-        });
+    let result;
+    if (settings.aiProvider === 'builtin') {
+        // Runs here, not in the background worker: the Prompt API is window-only.
+        try {
+            result = await summarizeBuiltin(payloadReviews, placeName, settings, googleRating, googleReviewCount, setBuiltinDetail);
+        }
+        catch (err) {
+            if (analysisCancelled)
+                return;
+            // A bare abort means a newer analysis replaced this one; that run reports.
+            if (err?.name === 'AbortError')
+                return;
+            console.error('[Review Atlas] Built-in model error:', err);
+            showError(describeBuiltinError(err));
+            return;
+        }
     }
-    catch (err) {
-        console.error('[Review Atlas] Background error:', err);
-        showError(`Failed to summarize: ${err}`);
-        return;
+    else {
+        let summaryResponse;
+        try {
+            summaryResponse = await sendRuntimeMessage({
+                type: 'SUMMARIZE',
+                payload: { reviews: payloadReviews, placeName, settings, googleRating, googleReviewCount },
+            });
+        }
+        catch (err) {
+            console.error('[Review Atlas] Background error:', err);
+            showError(`Failed to summarize: ${err}`);
+            return;
+        }
+        if (analysisCancelled)
+            return;
+        if (summaryResponse.type === 'ERROR') {
+            showError(summaryResponse.payload);
+            return;
+        }
+        if (summaryResponse.type !== 'SUMMARY_RESULT')
+            return;
+        result = summaryResponse.payload;
     }
     if (analysisCancelled)
         return;
-    if (summaryResponse.type === 'SUMMARY_RESULT') {
-        const timestamp = Date.now();
-        await setCachedResult(currentTabUrl, settings, summaryResponse.payload);
-        showHomeResult({ result: summaryResponse.payload, timestamp });
-    }
-    else if (summaryResponse.type === 'ERROR') {
-        showError(summaryResponse.payload);
-    }
+    const timestamp = Date.now();
+    await setCachedResult(currentTabUrl, settings, result);
+    showHomeResult({ result, timestamp });
 }
 function showError(message, opts) {
     // Leaving them running kept an interval alive behind the error screen, and
@@ -1232,6 +1323,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateProviderVisibility(btn.dataset.value);
             if (btn.dataset.value === 'ollama')
                 void runConnectionTest('ollama', 'auto');
+            if (btn.dataset.value === 'builtin')
+                void runConnectionTest('builtin', 'auto');
         });
     });
     // Analysis depth buttons — labels/hints sourced from ANALYSIS_DEPTHS so the
@@ -1262,6 +1355,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             await runConnectionTest(provider, btn.classList.contains('refresh-models-btn') ? 'refresh' : 'test');
         });
+    });
+    // Built-in model: fetch it now, from this click — the download needs one.
+    // The session is only a vehicle for the download, so it is released after.
+    const downloadBtn = document.getElementById('builtin-download-btn');
+    downloadBtn?.addEventListener('click', async () => {
+        downloadBtn.disabled = true;
+        setTestStatus('builtin', 'Downloading the on-device model…', 'busy');
+        try {
+            await startBuiltinSession(readSettingsFromUI(), (t) => setTestStatus('builtin', t, 'busy'));
+        }
+        catch (err) {
+            downloadBtn.disabled = false;
+            // Replaced by an analysis started meanwhile — that one owns the session now.
+            if (err?.name === 'AbortError')
+                return;
+            abortBuiltin();
+            setTestStatus('builtin', describeBuiltinError(err), 'fail');
+            return;
+        }
+        downloadBtn.disabled = false;
+        abortBuiltin();
+        await runConnectionTest('builtin');
     });
     // Re-probe Ollama for its model list when the endpoint changes
     document.querySelector('#ollama-endpoint-input')

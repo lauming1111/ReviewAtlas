@@ -42,6 +42,7 @@
   <table>
     <thead><tr><th>If you want…</th><th>Use</th></tr></thead>
     <tbody>
+      <tr><td>Nothing to install, nothing leaves your machine</td><td>Built-in — the on-device model in Chrome, on capable hardware</td></tr>
       <tr><td>Nothing to leave your machine, free</td><td>Ollama, or any local server below</td></tr>
       <tr><td>The simplest local setup</td><td>Ollama — one install, one command</td></tr>
       <tr><td>A GUI for managing local models</td><td>LM Studio or Jan</td></tr>
@@ -49,6 +50,34 @@
       <tr><td>Fast and free-tier hosted</td><td>Groq or Gemini</td></tr>
     </tbody>
   </table>
+
+  <h2>Built-in model</h2>
+  <p>
+    The <strong>Built-in</strong> provider uses the on-device model that ships with Chrome,
+    through its Prompt API. The extension makes no request on this path — the reviews are
+    processed by Chrome on this device — and Chrome downloads the model once (a few GB). A new
+    install starts on it wherever it is available; saved settings are never switched over.
+  </p>
+  <ul>
+    <li>Chrome 138 or later on Windows 10/11, macOS 13+, Linux or ChromeOS Plus — not on phones</li>
+    <li>About 22 GB free on the drive holding the Chrome profile. Below 10 GB Chrome deletes the model again, and it downloads anew on the next use</li>
+    <li>A GPU with more than 4 GB of VRAM, or 16 GB of RAM and 4 CPU cores. CPU-only machines work but can take minutes per summary; the request gives up after 5 minutes</li>
+    <li>An unmetered connection for the one-time download</li>
+  </ul>
+  <p>
+    <strong>Check availability</strong> in Settings → Built-in asks Chrome directly. When the
+    model is supported but not on disk yet, <strong>Download now</strong> fetches it ahead of
+    the first analysis; otherwise the first <em>Analyze</em> starts the download and collects
+    reviews while it runs. <code>chrome://on-device-internals</code> shows the model's state,
+    download progress and any error from Chrome.
+  </p>
+  <p>
+    It writes English, Japanese, Spanish, French and German. With another output language
+    chosen, the summary is written in English and the result says so; <em>Auto</em> follows
+    the reviews. Its context window is small and not published, so the prompt is measured
+    against it at run time and trimmed to fit — expect fewer reviews analyzed than with a
+    server-hosted model, and the result header gives the real count.
+  </p>
 
   <h2>Local setup</h2>
 
@@ -139,6 +168,21 @@
     refused the check, usually a wrong or expired API key. <em>Analyze anyway</em> is there for the
     uncommon setup that fails the check but works regardless: the check calls the provider's
     model-list endpoint, and a self-hosted server can serve chat without offering one.
+  </p>
+
+  <h3>"Built-in model is not ready"</h3>
+  <p>
+    Chrome reports that this computer cannot run its on-device model, so nothing was scraped.
+    Usually the hardware or free disk space falls short of the list above, Chrome is older than
+    138, or a policy (<code>GenAILocalFoundationalModelSettings</code>) turns the model off.
+    <code>chrome://on-device-internals</code> says which. Choose another provider in settings.
+    On a new install where this happens the extension starts on Ollama instead, and its error
+    says that no provider is set up yet.
+  </p>
+  <p>
+    If the model is available but the download never starts, open Settings → Built-in and press
+    <strong>Download now</strong>: Chrome starts the download only from a click, and the
+    <em>Analyze</em> click can expire before the model is requested.
   </p>
 
   <h3>My custom endpoint will not connect</h3>

@@ -20,10 +20,10 @@ Review Atlas – AI Review Summarizer
 ## Short description (132 char max)
 
 ```
-Turn hundreds of Google Maps reviews into pros, cons and themes — using your own local AI model or a provider you choose.
+Turn hundreds of Google Maps reviews into pros, cons and themes — on this device with no setup, or with the AI provider you choose.
 ```
 
-*(119 characters.)*
+*(131 characters. Matches `manifest.json`'s description.)*
 
 ## Category
 
@@ -51,6 +51,9 @@ WHAT YOU GET
 • Top themes — the topics that come up most: parking, wait times, service
 • Named staff — employees praised by name in multiple reviews
 • Overall sentiment and the real review count analyzed
+
+NO SETUP NEEDED
+On a capable computer it works straight after install, using the on-device model built into the browser: no server to run, no API key to paste, and the review text never leaves your device. The browser downloads the model once, while your first analysis collects reviews.
 
 BRING YOUR OWN MODEL
 Point it at an AI model running on your own computer and the review text never leaves your machine. Ollama works out of the box, and so does any local server that speaks the OpenAI API. Pick your runtime and its usual address is filled in for you; one click tests the connection and loads the model list from the server itself.
@@ -189,6 +192,13 @@ self-hosted within the extension rather than loaded from a CDN.
 No account or sign-in is needed, and the extension has no server of its own. It
 needs one AI backend, chosen by the user, to produce a summary.
 
+0. On a computer that can run the on-device model built into the browser (a recent
+   desktop Chrome, about 22 GB free disk, and 16 GB RAM or a GPU with more than 4 GB
+   VRAM), nothing needs configuring: open a Google Maps place (step 5 below) and click
+   "Analyze Reviews". The first run downloads the model once (a few GB), with its
+   progress on the loading screen. Settings > Built-in > "Check availability" says
+   whether the machine qualifies; if it does not, use the steps below.
+
 Quickest way to test with no downloads:
 1. Open the extension's options (the gear icon in its popup).
 2. Choose any hosted provider — Google Gemini and Groq both issue a free API key.
@@ -221,7 +231,7 @@ one will be provided.
 | Location | Not collected |
 | Web history | Not collected |
 | User activity | Not collected |
-| Website content | **Collected** — the public review text on the page being summarized, sent only to the AI provider the user selected in order to generate the summary |
+| Website content | **Collected** — the public review text on the page being summarized, sent only to the AI provider the user selected in order to generate the summary. With the built-in provider it is processed on the user's device by the browser's own model and not transmitted at all |
 
 Certifications (all true for this extension):
 
