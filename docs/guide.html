@@ -70,8 +70,28 @@
 
   <h2>Step 2 — Choose who does the reading</h2>
   <p>
-    The extension does not include an AI. You point it at one. There are two ways to do
-    that, and neither is wrong — it is a trade between effort and privacy.
+    The extension does not include an AI of its own — it uses one you choose. On many newer
+    computers Chrome already has one built in, and there is nothing to do. Otherwise there
+    are two ways, and neither is wrong — it is a trade between effort and privacy.
+  </p>
+
+  <h3>First, the easy case — the AI built into Chrome</h3>
+  <p>
+    Recent versions of Chrome come with a small AI model of their own that runs on your
+    computer. If yours can run it, Review Atlas uses it from the start: nothing to install,
+    nothing to sign up for, and the reviews never leave your computer. You can skip straight
+    to Step 3.
+  </p>
+  <ul>
+    <li>It needs a fairly new computer: Windows 10 or 11, macOS 13 or later, or Linux, about 22 GB of free disk space, and either a graphics card with more than 4 GB of memory or 16 GB of RAM.</li>
+    <li>The first time, Chrome downloads the model — a few gigabytes, once. The loading screen shows how far along it is, and the reviews are collected meanwhile.</li>
+    <li>It writes summaries in English, Japanese, Spanish, French and German. If you picked another language in settings, the summary comes out in English and says so.</li>
+    <li>It reads fewer reviews per place than the options below, and on a computer without a graphics card one summary can take a few minutes.</li>
+  </ul>
+  <p>
+    To check, open <strong>⚙</strong> settings, choose <strong>Built-in</strong> under
+    <em>AI Provider</em> and press <strong>Check availability</strong>. If it says the model
+    is not available, pick one of the two options below.
   </p>
 
   <div class="grid grid-2">
@@ -98,6 +118,7 @@
   <table>
     <thead><tr><th>If this sounds like you…</th><th>Pick</th></tr></thead>
     <tbody>
+      <tr><td>I want nothing to set up at all</td><td>The AI built into Chrome, if my computer can run it</td></tr>
       <tr><td>I want it working in five minutes</td><td>An AI on the internet</td></tr>
       <tr><td>My laptop is a few years old, or short on disk space</td><td>An AI on the internet</td></tr>
       <tr><td>I would rather nothing left my computer</td><td>An AI on my computer</td></tr>
@@ -214,6 +235,13 @@
     even though the check fails; if you are not sure, fix the setting instead.
   </p>
 
+  <h3>"Built-in model is not ready" or "No AI provider is set up yet"</h3>
+  <p>
+    This computer cannot run the AI built into Chrome — usually too little free disk space
+    or memory, or an older Chrome. Nothing was read from the page. Open <strong>⚙</strong>
+    settings and choose one of the other two options from Step 2.
+  </p>
+
   <h3>"Open a business on Google Maps"</h3>
   <p>
     The tab you are on is not a place page. Search for a business on Google Maps, click
@@ -259,8 +287,8 @@
 
   <h2>Is any of this private?</h2>
   <p>
-    There is no Review Atlas server, and nothing is tracked. If you chose an AI on your own
-    computer, the reviews never leave it. If you chose one on the internet, the review text
+    There is no Review Atlas server, and nothing is tracked. If you use the AI built into
+    Chrome, or chose one on your own computer, the reviews never leave it. If you chose one on the internet, the review text
     goes to that provider and nowhere else. The full details are on the
     <a href="privacy.html">privacy page</a>.
   </p>

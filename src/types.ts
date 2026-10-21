@@ -32,6 +32,11 @@ export interface SummaryResult {
    * English relative dates, so this fires on non-English Maps locales.
    */
   dateParseWarning?: string;
+  /**
+   * Set by a provider that could not honour a setting and fell back — the
+   * built-in model writes English when it cannot write the chosen language.
+   */
+  providerNotice?: string;
 }
 
 /**
@@ -58,7 +63,7 @@ export interface ReviewSettings {
   analysisDepth?: AnalysisDepth;
   /** BCP-47 tag, or 'auto' to follow the dominant language of the reviews. */
   outputLanguage?: string;
-  aiProvider: 'ollama' | 'openai' | 'anthropic' | 'gemini' | 'groq' | 'xai' | 'custom';
+  aiProvider: 'builtin' | 'ollama' | 'openai' | 'anthropic' | 'gemini' | 'groq' | 'xai' | 'custom';
   // Ollama
   /** Base URL of the Ollama server. Defaults to AI_DEFAULTS.OLLAMA_ENDPOINT. */
   ollamaEndpoint?: string;
@@ -99,6 +104,18 @@ export interface ReviewSettings {
  */
 export type ReviewSort = 'relevance' | 'newest';
 
+/**
+ * Outcome of a provider check — the Test connection button, the pre-scrape
+ * check and the model picker all read it. `availability` is set only for the
+ * built-in model, whose state also decides whether "Download now" is offered.
+ */
+export interface ConnectionResult {
+  ok: boolean;
+  message: string;
+  models?: string[];
+  availability?: 'unavailable' | 'downloadable' | 'downloading' | 'available';
+}
+
 export interface ScrollConfig {
   tabOpenWaitMs: number;
   pollIntervalMs: number;
@@ -125,4 +142,4 @@ export type MessageType =
    * One round-trip serves both the "Test connection" button and the model picker.
    */
   | { type: 'TEST_CONNECTION'; payload: { settings: ReviewSettings } }
-  | { type: 'CONNECTION_RESULT'; payload: { ok: boolean; message: string; models?: string[] } };
+  | { type: 'CONNECTION_RESULT'; payload: ConnectionResult };

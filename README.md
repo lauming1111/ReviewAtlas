@@ -1,9 +1,10 @@
 # Review Atlas – AI Review Summarizer
 
 A Chrome extension that instantly summarizes Google Maps reviews using AI.
-Runs against **any local model** — Ollama, LM Studio, llama.cpp, Jan, vLLM and other
-OpenAI-compatible servers, so nothing leaves your machine — or against a cloud
-provider (OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok) if you prefer.
+On a capable computer it works **with no setup at all**, using the on-device model built
+into Chrome, so nothing leaves your machine. It also runs against **any local model** —
+Ollama, LM Studio, llama.cpp, Jan, vLLM and other OpenAI-compatible servers — or against a
+cloud provider (OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok) if you prefer.
 
 > **Not a developer?** Start with the **[quick start guide](https://lauming1111.github.io/ReviewAtlas/guide.html)**
 > ([`docs/guide.html`](./docs/guide.html)). It covers installing, choosing an AI and reading
@@ -20,6 +21,7 @@ provider (OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok) if you prefer
 - **Instant place info** — opens to place name, rating, review count, address, and phone with no delay
 - **Auto-scroll** — automatically scrolls the reviews panel to collect up to 1,000 reviews (adjustable)
 - **AI summary** — returns pros, cons, top themes, overall sentiment, and frequently mentioned staff
+- **No setup on capable computers** — the Built-in provider uses Chrome's on-device model: no server, no API key, and the reviews never leave the device. Chrome downloads the model once, while the first analysis collects reviews
 - **Bring your own model** — Ollama or any OpenAI-compatible local server (LM Studio, llama.cpp, Jan, vLLM, KoboldCpp, LocalAI, text-generation-webui), with one-click endpoint presets, a model picker read from the server itself, and full sampling control
 - **Cloud providers too** — OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok
 - **Encrypted key storage** — API keys are encrypted at rest with AES-GCM-256; never exposed in the DOM
@@ -47,6 +49,12 @@ GitHub Pages:
 
 - Google Chrome (or any Chromium-based browser)
 - **One of the following AI backends:**
+  - **Nothing to install — the built-in model.** Needs a recent Chrome (138 or later) on
+    Windows 10/11, macOS 13+, Linux or ChromeOS Plus, about 22 GB free disk (Chrome removes
+    the model again below 10 GB), and either a GPU with more than 4 GB VRAM or 16 GB RAM and
+    4 CPU cores. The one-time download (a few GB) needs an unmetered connection. The model
+    writes English, Japanese, Spanish, French and German; other output languages fall back
+    to English
   - A local model server — [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai),
     [llama.cpp](https://github.com/ggml-org/llama.cpp), [Jan](https://jan.ai),
     [vLLM](https://docs.vllm.ai), KoboldCpp, LocalAI, or text-generation-webui (free, private)
@@ -56,7 +64,12 @@ GitHub Pages:
 
 ## Installation
 
-### 1. Set up an AI backend
+### 1. Set up an AI backend (optional on capable computers)
+
+**Built-in (no setup):** skip this step. On a computer that meets the requirements above,
+a new install starts on the **Built-in** provider; the first **Analyze** starts Chrome's
+one-time model download and the summary follows once it finishes. Settings → **Built-in** →
+**Check availability** tells you whether this computer qualifies.
 
 **Ollama (local, recommended):**
 
@@ -109,7 +122,8 @@ Click ⚙ in the top-right to configure:
 
 | Setting | Description |
 |---|---|
-| **AI Provider** | Ollama · Local server (LM Studio, llama.cpp, Jan, vLLM, …) · OpenAI · Anthropic · Gemini · Groq · xAI Grok |
+| **AI Provider** | Built-in (on-device, no setup) · Ollama · Local server (LM Studio, llama.cpp, Jan, vLLM, …) · OpenAI · Anthropic · Gemini · Groq · xAI Grok |
+| **Check availability** / **Download now** | Built-in only: whether this computer can run the on-device model, and a button to fetch it ahead of the first analysis |
 | **Runtime preset** | Fills in the default address for your local runtime |
 | **Model** | Provider-specific selector; the Ollama field autocompletes from your installed models |
 | **Test connection** | Validates the key or endpoint before running an analysis |
@@ -137,7 +151,9 @@ Keys entered in settings are encrypted with AES-GCM-256 before being written to 
 ```
 review-atlas/
 ├── src/
-│   ├── background.ts         # Service worker — filters reviews, calls AI APIs
+│   ├── background.ts         # Service worker — calls the AI APIs
+│   ├── summarize.ts          # Shared review filtering, prompt and result parsing
+│   ├── builtin.ts            # Built-in on-device model (runs in the popup)
 │   ├── content.ts            # Injected into Maps — scrapes & auto-scrolls reviews
 │   ├── popup.ts              # Popup UI logic
 │   ├── crypto.ts             # AES-GCM-256 API key encryption

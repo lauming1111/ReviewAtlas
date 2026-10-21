@@ -210,7 +210,8 @@
       margin-bottom: 12px;
     }
 
-    .test-conn-btn {
+    .test-conn-btn,
+    .download-model-btn {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -223,7 +224,9 @@
       transition: border-color 0.15s, color 0.15s;
     }
 
-    .test-conn-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+    .test-conn-btn:hover,
+    .download-model-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+    .download-model-btn:disabled { cursor: progress; }
 
     .test-status {
       font-size: 11px;
@@ -412,7 +415,8 @@
       margin-bottom: 16px;
     }
 
-    /* Custom provider spans full width */
+    /* Built-in (first) and Custom (last) providers span full width */
+    .scope-btn[data-value="builtin"],
     .scope-btn[data-value="custom"] { grid-column: 1 / -1; flex-direction: row; gap: 8px; }
 
     .scope-btn {
@@ -945,6 +949,11 @@
     <section class="settings-card">
       <h2 class="section-label">AI Provider</h2>
       <div class="scope-grid" id="ai-provider-group">
+        <!-- Built-in spans full row -->
+        <button class="scope-btn" data-value="builtin">
+          <span class="scope-label">Built-in</span>
+          <span class="scope-sub">on-device · no setup</span>
+        </button>
         <button class="scope-btn" data-value="ollama">
           <span class="scope-label">Ollama</span>
           <span class="scope-sub">local · free</span>
@@ -974,6 +983,24 @@
           <span class="scope-label">Local server</span>
           <span class="scope-sub">LM Studio · llama.cpp · Jan · vLLM · any OpenAI-compatible</span>
         </button>
+      </div>
+
+      <!-- ── Built-in on-device model ── -->
+      <div id="builtin-config" hidden>
+        <p class="provider-note">
+          Uses the on-device model built into Chrome. This extension sends nothing
+          to any server; Chrome fetches the model once (a few GB). Writes summaries
+          in English, 日本語, Español, Français and Deutsch — other output languages
+          fall back to English. Needs a recent Chrome on Windows, macOS or Linux,
+          about 22 GB free disk, and a GPU with more than 4 GB VRAM or 16 GB RAM.
+        </p>
+
+        <div class="test-row">
+          <button class="test-conn-btn" data-provider="builtin">Check availability</button>
+          <!-- Shown only while the model is downloadable: the download needs a click. -->
+          <button class="download-model-btn" id="builtin-download-btn" hidden>Download now</button>
+          <span class="test-status" id="builtin-test-status"></span>
+        </div>
       </div>
 
       <!-- ── Ollama ── -->

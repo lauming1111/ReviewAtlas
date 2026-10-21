@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Review Atlas – AI Review Summarizer",
   "version": "1.4.0",
-  "description": "Turn hundreds of Google Maps reviews into pros, cons and themes — with your own local AI model or a provider you choose.",
+  "description": "Turn hundreds of Google Maps reviews into pros, cons and themes — on this device with no setup, or with the AI provider you choose.",
   "permissions": [
     "activeTab",
     "scripting",

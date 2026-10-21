@@ -33,8 +33,9 @@
   <div class="callout good" style="margin-top:26px">
     <p><strong>The short version.</strong> There is no Review Atlas server. Nothing is
     sent to us, because there is nowhere to send it. Review text goes only to the
-    AI provider you choose — and if you choose a model running on your own
-    computer, it never leaves your machine at all.</p>
+    AI provider you choose — and if you choose the model built into Chrome, or one
+    running on your own computer, it never leaves your machine at all. On the
+    built-in path the extension makes no network request of its own.</p>
   </div>
 
   <h2>Who is responsible</h2>
@@ -59,7 +60,9 @@
   <p>
     Before collecting anything, the extension asks the provider you selected for its list of
     models, to check that the provider is reachable and your key works. That request carries your
-    key and no review text. It is the only request made before you see a result.
+    key and no review text. It is the only request made before you see a result. With the
+    built-in model there is no such request: Chrome is asked directly whether its on-device
+    model is available.
   </p>
   <p>
     To exactly one place: the AI provider you selected in settings. Nowhere else.
@@ -69,6 +72,10 @@
   <table>
     <thead><tr><th>Your choice</th><th>Where review text goes</th></tr></thead>
     <tbody>
+      <tr>
+        <td><strong>The built-in model</strong> — the on-device model that ships with Chrome</td>
+        <td>Processed by Chrome on this device; no request leaves the browser. Chrome downloads the model itself, once, and that download carries no review text.</td>
+      </tr>
       <tr>
         <td><strong>A local model</strong> — Ollama, LM Studio, llama.cpp, Jan, vLLM, KoboldCpp, LocalAI, text-generation-webui, or any OpenAI-compatible server you run</td>
         <td>To that server only. If it runs on your own machine or your own network, the review text <strong>never leaves it</strong>.</td>
