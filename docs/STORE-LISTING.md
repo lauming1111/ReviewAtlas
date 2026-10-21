@@ -134,44 +134,26 @@ websites is unchanged. No other request is modified, blocked or redirected.
 ### Host permissions — all of them, one field
 
 > The dashboard has a **single** host-permission justification field, not one per
-> host. Paste this whole block into it.
+> host, and it holds **1,000 characters**. Paste this whole block into it: one line
+> per paragraph, exactly as saved there (956 characters). A longer text is cut
+> off mid-sentence without warning.
 
 ```
-The extension contacts three groups of hosts, and nothing else.
+The extension contacts only these hosts.
 
 1. https://www.google.com/* and https://maps.google.com/*
-These are the pages whose reviews are summarized. The content script reads the
-visible review text, rating and place name from a Google Maps place page or a
-Google Search knowledge panel, and only after the user clicks "Analyze Reviews"
-in the extension popup.
+Pages whose reviews are summarized. Review text, rating and place name are read only after the user clicks "Analyze Reviews".
 
 2. http://localhost/* and http://127.0.0.1/*
-Required to send review text to an AI model running locally on the user's own
-machine (Ollama on port 11434, LM Studio on 1234, llama.cpp on 8080, and
-similar). This is the privacy-preserving default: when a local model is used,
-review text never leaves the user's computer.
+An AI model the user runs on their own machine (Ollama, LM Studio and similar). Review text never leaves the computer.
 
-3. api.openai.com, api.anthropic.com, generativelanguage.googleapis.com,
-api.groq.com and api.x.ai
-Hosted AI providers. Exactly one of these is contacted per analysis - the single
-provider the user selected in settings, using an API key the user supplied for
-that provider. The others are never contacted.
+3. api.openai.com, api.anthropic.com, generativelanguage.googleapis.com, api.groq.com and api.x.ai
+Hosted AI providers. Only the one the user selected is contacted, with their own API key.
 
-OPTIONAL host permissions: http://*/* and https://*/*
-These are declared as OPTIONAL host permissions and are never requested at
-install time.
+The built-in on-device provider contacts no host at all.
 
-The extension supports self-hosted, OpenAI-compatible AI servers (LM Studio,
-llama.cpp, Jan, vLLM, LocalAI and similar). A user may run such a server on any
-address on their own machine or private network. Because that address is supplied
-by the user at runtime, it cannot be known when the extension is packaged, so the
-optional pattern must be broad.
-
-At runtime the extension never requests this broad pattern. When the user saves a
-custom endpoint, chrome.permissions.request() is called with only that single
-origin (for example https://my-server.example.com/*), and only when the address
-is not localhost or 127.0.0.1. Users who do not configure a self-hosted endpoint
-are never asked for any additional permission.
+OPTIONAL: http://*/* and https://*/*
+Never requested at install. A user may run a self-hosted OpenAI-compatible server at any address, unknown at packaging time. When the user saves such an endpoint (not localhost), chrome.permissions.request() asks for that single origin only, e.g. https://my-server.example.com/*.
 ```
 
 ### Remote code
@@ -185,36 +167,16 @@ self-hosted within the extension rather than loaded from a CDN.
 
 ## Notes for the reviewer
 
-> Paste into the dashboard's reviewer-notes field. An extension that needs the user's
-> own AI provider is easy to reject as "could not test", so spell the path out.
+> Paste into **Access → Test instructions → Additional instructions**, which holds
+> **500 characters** (495 here); leave Username and Password empty. An
+> extension that needs the user's own AI provider is easy to reject as "could not
+> test", so spell the path out.
 
 ```
-No account or sign-in is needed, and the extension has no server of its own. It
-needs one AI backend, chosen by the user, to produce a summary.
-
-0. On a computer that can run the on-device model built into the browser (a recent
-   desktop Chrome, about 22 GB free disk, and 16 GB RAM or a GPU with more than 4 GB
-   VRAM), nothing needs configuring: open a Google Maps place (step 5 below) and click
-   "Analyze Reviews". The first run downloads the model once (a few GB), with its
-   progress on the loading screen. Settings > Built-in > "Check availability" says
-   whether the machine qualifies; if it does not, use the steps below.
-
-Quickest way to test with no downloads:
-1. Open the extension's options (the gear icon in its popup).
-2. Choose any hosted provider — Google Gemini and Groq both issue a free API key.
-3. Paste the key and press "Test connection". It should report success.
-4. Press Save.
-5. Open any business on Google Maps, for example
-   https://www.google.com/maps/place/Tartine+Bakery/
-6. Click the extension icon, then "Analyze Reviews". The reviews panel scrolls
-   itself while reviews are collected, then the summary appears.
-
-Alternative with no API key: install Ollama (https://ollama.com), run
-"ollama pull llama3.2", choose Ollama in settings, then follow steps 4-6. The
-review text then never leaves the machine.
-
-If a temporary API key would help the review, contact minglau0315@gmail.com and
-one will be provided.
+No account needed; the extension has no server. It needs one AI backend.
+1. Capable desktop Chrome (22 GB free disk; 16 GB RAM or GPU >4 GB VRAM): no setup. Open google.com/maps/place/Tartine+Bakery, click the icon, Analyze Reviews. First run downloads the on-device model once.
+2. Otherwise: gear icon > Gemini or Groq (free API key) > paste key > Test connection > Save, then step 1.
+Settings > Built-in > Check availability tells which applies. Temporary key on request: minglau0315@gmail.com
 ```
 
 ---
@@ -272,13 +234,14 @@ Certifications (all true for this extension):
    publisher display name, and verify the contact email shown on the listing.
 2. **Trader status**: the declaration is required before an item can publish.
    Declaring trader means publishing a contact address and phone number publicly.
-3. **New item** → upload `review-atlas-1.5.0.zip` (the zip, not the folder).
+3. **Package** → upload `review-atlas-1.5.0.zip` (the zip, not the folder) — to the
+   existing item, not a new one, so the extension ID and its history carry over.
 4. **Store listing**: detailed description, category Productivity, language English,
    the five screenshots, the promo tile, homepage and support URLs — all above.
 5. **Privacy**: privacy policy URL, single purpose, a justification per permission,
    remote code "no", the data-use answers and the three certifications.
 6. **Distribution**: free, public or unlisted, all regions.
-7. Paste the **reviewer notes** into the submission notes, then submit.
+7. Paste the **reviewer notes** into Access → Test instructions, then submit.
 8. After the listing goes live: point the landing page's install CTA and the guide's
    **Add to Chrome** button at the store URL (both are marked with a TODO comment),
    and publish the drafted GitHub release.
