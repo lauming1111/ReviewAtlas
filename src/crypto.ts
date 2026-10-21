@@ -90,7 +90,9 @@ async function getDerivedKey(): Promise<CryptoKey> {
   );
 
   _cachedKey = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    // TS 5.7+ types a bare Uint8Array as possibly SharedArrayBuffer-backed,
+    // which BufferSource rejects; ours never are.
+    { name: 'PBKDF2', salt: salt as BufferSource, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
     keyMaterial,
     { name: 'AES-GCM', length: 256 },
     false,
@@ -136,9 +138,9 @@ export async function decryptApiKey(encoded: string): Promise<string> {
   const key        = await getDerivedKey();
 
   const plainBuf = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
+    { name: 'AES-GCM', iv: iv as BufferSource }, // casts: see getDerivedKey()
     key,
-    ciphertext
+    ciphertext as BufferSource
   );
   return new TextDecoder().decode(plainBuf);
 }
