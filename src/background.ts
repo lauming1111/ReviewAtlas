@@ -1,5 +1,5 @@
 import type { ConnectionResult, LocalProvider, MessageType, ModelParams, Review, ReviewSettings, SummaryResult } from './types.js';
-import { AI_DEFAULTS, PROMPT_BUDGET } from './config.js';
+import { AI_DEFAULTS, PROMPT_BUDGET, SITE } from './config.js';
 import {
   buildPrompt, buildResult, computeAvg, filterReviews, isLocalProvider, localParams,
   parseAIResponse, selectReviewsForPrompt, withRetry,
@@ -510,6 +510,24 @@ async function summarize(
     dateParseWarning
   );
 }
+
+// ─── Uninstall survey ────────────────────────────────────────────────────────
+
+/**
+ * Chrome opens this URL when the extension is removed. Only the version travels
+ * in it, and the extension itself sends nothing. Set on install and on every
+ * update, so the version stays current; Chrome persists it between runs.
+ */
+chrome.runtime.onInstalled.addListener(() => {
+  try {
+    const version = encodeURIComponent(chrome.runtime.getManifest().version);
+    chrome.runtime.setUninstallURL(`${SITE.UNINSTALL_SURVEY}?v=${version}`).catch((err: unknown) => {
+      console.warn('[Review Atlas] Could not set the uninstall URL:', err);
+    });
+  } catch (err) {
+    console.warn('[Review Atlas] Could not set the uninstall URL:', err);
+  }
+});
 
 // ─── Message listener ─────────────────────────────────────────────────────────
 

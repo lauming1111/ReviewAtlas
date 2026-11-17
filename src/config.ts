@@ -204,6 +204,13 @@ export const PROMPT_BUDGET = {
   PER_REVIEW_OVERHEAD: 24,
 } as const;
 
+// ─── Site ────────────────────────────────────────────────────────────────────
+
+export const SITE = {
+  /** Opened by Chrome when the extension is removed — an optional survey page on the project site. */
+  UNINSTALL_SURVEY: 'https://lauming1111.github.io/ReviewAtlas/uninstall.html',
+} as const;
+
 // ─── Output languages ────────────────────────────────────────────────────────
 
 /** Offered in the settings picker. 'auto' follows the reviews' own language. */

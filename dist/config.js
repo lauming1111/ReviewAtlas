@@ -153,6 +153,11 @@ export const PROMPT_BUDGET = {
     /** Serialization overhead per review: "[Review 999] ⭐4/5 — " plus the join. */
     PER_REVIEW_OVERHEAD: 24,
 };
+// ─── Site ────────────────────────────────────────────────────────────────────
+export const SITE = {
+    /** Opened by Chrome when the extension is removed — an optional survey page on the project site. */
+    UNINSTALL_SURVEY: 'https://lauming1111.github.io/ReviewAtlas/uninstall.html',
+};
 // ─── Output languages ────────────────────────────────────────────────────────
 /** Offered in the settings picker. 'auto' follows the reviews' own language. */
 export const OUTPUT_LANGUAGES = [
