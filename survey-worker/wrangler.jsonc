@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "review-atlas-survey",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-17",
+  "workers_dev": true,
+  // Logs stay off on purpose: the survey promises it stores no IP address or identifier.
+  "observability": { "enabled": false },
+  "vars": {
+    // The only origin allowed to post. Override locally in .dev.vars.
+    "ALLOWED_ORIGIN": "https://lauming1111.github.io"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "review-atlas-survey",
+      // Created 2026-11-17 with `npx wrangler d1 create review-atlas-survey`.
+      "database_id": "04154264-1084-4d6a-a6b6-dd37cb74e522",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 5, "period": 60 }
+    }
+  ]
+}
