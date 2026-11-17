@@ -1,4 +1,4 @@
-import { AI_DEFAULTS, PROMPT_BUDGET } from './config.js';
+import { AI_DEFAULTS, PROMPT_BUDGET, SITE } from './config.js';
 import { buildPrompt, buildResult, computeAvg, filterReviews, isLocalProvider, localParams, parseAIResponse, selectReviewsForPrompt, withRetry, } from './summarize.js';
 /** Ollama base URL for this request — user-configurable, trailing slashes stripped. */
 function ollamaBase(settings) {
@@ -399,6 +399,23 @@ async function summarize(reviews, placeName, settings, googleRating, googleRevie
     const parsed = await withRetry(async () => parseAIResponse(await call(prompt, settings)));
     return buildResult(parsed, placeName, avgRating, googleReviewCount ?? reviews.length, selected.length, filtered.length, dateParseWarning);
 }
+// ─── Uninstall survey ────────────────────────────────────────────────────────
+/**
+ * Chrome opens this URL when the extension is removed. Only the version travels
+ * in it, and the extension itself sends nothing. Set on install and on every
+ * update, so the version stays current; Chrome persists it between runs.
+ */
+chrome.runtime.onInstalled.addListener(() => {
+    try {
+        const version = encodeURIComponent(chrome.runtime.getManifest().version);
+        chrome.runtime.setUninstallURL(`${SITE.UNINSTALL_SURVEY}?v=${version}`).catch((err) => {
+            console.warn('[Review Atlas] Could not set the uninstall URL:', err);
+        });
+    }
+    catch (err) {
+        console.warn('[Review Atlas] Could not set the uninstall URL:', err);
+    }
+});
 // ─── Message listener ─────────────────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === 'SUMMARIZE') {
