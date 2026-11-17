@@ -252,6 +252,47 @@ section { padding: 54px 0; }
   .toast { transition: none; transform: none; }
 }
 
+/* ── Uninstall survey ── */
+.survey-lead { font-size: 15.5px; margin-top: 10px; }
+.survey { margin-top: 30px; }
+.survey fieldset { border: 0; min-width: 0; }
+.survey legend { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 19px; color: var(--text); margin-bottom: 4px; }
+.survey legend small, .survey .field-label small { font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: 13.5px; color: var(--text-muted); }
+.survey .field-label { display: block; font-weight: 600; font-size: 15px; color: var(--text); margin: 24px 0 8px; }
+.survey textarea {
+  display: block; width: 100%; min-height: 76px; resize: vertical;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 14px; font: inherit; font-size: 15px;
+}
+.survey textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-glow); }
+.survey .hint { font-size: 13px; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; }
+.survey .actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 22px; }
+.survey .fine { font-size: 13px; max-width: 520px; }
+.survey .status { margin-top: 18px; }
+.survey .status p + p { margin-top: 8px; }
+.survey .status .btn { margin-top: 12px; }
+.survey .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.done h2 { margin: 0 0 8px; }
+.done p + p { margin-top: 10px; }
+
+/* Reason chips: the checkbox stays in the page for the keyboard and screen readers, the pill is its face. */
+.chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip span {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 100px;
+  padding: 8px 15px; font-size: 14px; color: var(--text-muted); cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.chip span::before { content: '+'; font-weight: 700; color: var(--text-muted); width: 10px; text-align: center; }
+.chip:hover span { border-color: #3a3a52; color: var(--text); }
+.chip input:checked + span { border-color: var(--accent); color: var(--text); background: rgba(108, 99, 255, .14); }
+.chip input:checked + span::before { content: '\2713'; color: var(--accent-text); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent-text); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .chip span { transition: none; } }
+
 /* ── Footer ── */
 .site-footer {
   border-top: 1px solid var(--border);
