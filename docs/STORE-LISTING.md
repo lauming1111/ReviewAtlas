@@ -227,8 +227,8 @@ Certifications (all true for this extension):
 - [x] GitHub Pages live on `main` → `/docs`; the privacy, support and homepage URLs
       above all return 200 over HTTPS
 - [x] Developer account created
-- [x] Package built and verified: `review-atlas-1.5.0.zip`, 166 KB, 18 files, no
-      remote code, fonts bundled, manifest reads `Review Atlas – AI Review Summarizer` / `1.5.0`
+- [x] Package built and verified: `review-atlas-1.6.0.zip`, 167 KB, 18 files, no
+      remote code, fonts bundled, manifest reads `Review Atlas – AI Review Summarizer` / `1.6.0`
 - [x] Every permission in the manifest is used by the code, and every host in
       `host_permissions` is one the code actually contacts — unused entries are a
       common rejection
@@ -240,7 +240,7 @@ Certifications (all true for this extension):
    publisher display name, and verify the contact email shown on the listing.
 2. **Trader status**: the declaration is required before an item can publish.
    Declaring trader means publishing a contact address and phone number publicly.
-3. **Package** → upload `review-atlas-1.5.0.zip` (the zip, not the folder) — to the
+3. **Package** → upload `review-atlas-1.6.0.zip` (the zip, not the folder) — to the
    existing item, not a new one, so the extension ID and its history carry over.
 4. **Store listing**: detailed description, category Productivity, language English,
    the five screenshots, the promo tile, homepage and support URLs — all above.
