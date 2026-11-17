@@ -28,11 +28,11 @@
 <article class="prose" style="padding:44px 0">
 
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated 20 October 2026 · Applies to the Review Atlas Chrome extension, version 1.5.0.</p>
+  <p class="updated">Last updated 17 November 2026 · Applies to the Review Atlas Chrome extension, version 1.5.0.</p>
 
   <div class="callout good" style="margin-top:26px">
-    <p><strong>The short version.</strong> There is no Review Atlas server. Nothing is
-    sent to us, because there is nowhere to send it. Review text goes only to the
+    <p><strong>The short version.</strong> The extension has no server of ours, and nothing
+    it reads is sent to us. Review text goes only to the
     AI provider you choose — and if you choose the model built into Chrome, or one
     running on your own computer, it never leaves your machine at all. On the
     built-in path the extension makes no network request of its own.</p>
@@ -133,7 +133,7 @@
     <li>No tracking, no advertising, no fingerprinting, no cookies</li>
     <li>No accounts, no sign-in, no email collection</li>
     <li>No crash or error reporting sent anywhere</li>
-    <li>No selling or sharing of data — there is no data of yours in our hands to sell</li>
+    <li>No selling or sharing of data — the extension puts no data of yours in our hands, and the optional <a href="#uninstall-survey">uninstall survey</a> stores only what you choose to send</li>
   </ul>
   <p>
     The extension's own interface makes <strong>no third-party requests at all</strong>.
@@ -154,6 +154,18 @@
       <tr><td>Optional: all hosts</td><td>Requested <strong>only</strong> if you point the extension at a self-hosted server on some other address. The extension cannot know that address in advance, so the option must be broad — but nothing is requested at install, and when you do save such an endpoint it asks for that single address only.</td></tr>
     </tbody>
   </table>
+
+  <h2 id="uninstall-survey">Uninstall survey</h2>
+  <p>
+    When you remove the extension, Chrome opens a short survey page on this site. The address it
+    opens carries only the extension's version number. The extension itself still sends nothing.
+  </p>
+  <ul>
+    <li><strong>Answering is optional.</strong> Nothing is sent unless you press <em>Send</em>. You can close the page.</li>
+    <li><strong>What is stored:</strong> the reasons you picked, the note you wrote, the extension's version and the date (the day, not the time).</li>
+    <li><strong>What is not stored:</strong> your IP address, your email address, or any identifier. Please leave names, emails and API keys out of the note.</li>
+    <li><strong>Where it goes:</strong> to a small endpoint we run on Cloudflare. The answers are used only to improve the extension.</li>
+  </ul>
 
   <h2>Your control</h2>
   <ul>
