@@ -39,8 +39,8 @@ cloud provider (OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok) if you 
 ## Website
 
 Landing page, quick start guide (written for non-technical users), setup guide,
-privacy policy and changelog live in [`docs/`](./docs) and are published with
-GitHub Pages:
+privacy policy, changelog and the uninstall survey live in [`docs/`](./docs) and are
+published with GitHub Pages:
 **<https://lauming1111.github.io/ReviewAtlas/>**
 
 ---
@@ -144,6 +144,20 @@ Scraped reviews are cached for 24 hours, so **↺ Re-analyze** and switching pro
 
 Keys entered in settings are encrypted with AES-GCM-256 before being written to Chrome's local storage. They are never loaded back into the input field — a `✓ Saved` badge confirms a stored key. Use the `✕` button beside a key field to revoke it.
 
+### Privacy and feedback
+
+The extension has no server of its own. Review text goes only to the AI you picked, or nowhere
+with the Built-in model.
+
+When you remove the extension, Chrome opens a short, optional survey page
+(`docs/uninstall.html`). The address carries only the extension version. Nothing is sent
+unless you press **Send**. Then the page posts your chosen reasons, your note and the version
+to a small Cloudflare Worker ([`survey-worker/`](./survey-worker)), which stores them with the
+date only. Your IP address, email and any identifier are never stored. The full detail is in the
+[privacy policy](https://lauming1111.github.io/ReviewAtlas/privacy.html#uninstall-survey).
+
+For bugs and ideas, [open a GitHub issue](https://github.com/lauming1111/ReviewAtlas/issues).
+
 ---
 
 ## Project Structure
@@ -151,7 +165,7 @@ Keys entered in settings are encrypted with AES-GCM-256 before being written to 
 ```
 review-atlas/
 ├── src/
-│   ├── background.ts         # Service worker — calls the AI APIs
+│   ├── background.ts         # Service worker — calls the AI APIs, sets the uninstall survey URL
 │   ├── summarize.ts          # Shared review filtering, prompt and result parsing
 │   ├── builtin.ts            # Built-in on-device model (runs in the popup)
 │   ├── content.ts            # Injected into Maps — scrapes & auto-scrolls reviews
@@ -165,8 +179,13 @@ review-atlas/
 ├── build.js                  # Post-compile copy script
 ├── tsconfig.json
 ├── package.json
+├── docs/                     # Website on GitHub Pages, including uninstall.html
+├── survey-worker/            # Cloudflare Worker + D1 that stores survey answers (own package)
 └── review-atlas-extension/   # Built extension (git-ignored) — load this in Chrome
 ```
+
+`survey-worker/` is never part of the extension build. Its
+[README](./survey-worker/README.md) covers local runs, deploys and reading the answers.
 
 ---
 
