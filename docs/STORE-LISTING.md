@@ -67,7 +67,7 @@ CONTROLS
 • Full sampling control for local models: temperature, top-p, top-k, repeat penalty, context window
 
 PRIVACY
-There is no Review Atlas server. Nothing is sent to us, because there is nowhere to send it.
+The extension has no server of ours, and nothing it reads is sent to us.
 • Review text goes only to the AI provider you selected — with a local model, nowhere at all
 • API keys are AES-GCM-256 encrypted in local storage and never shown back to you
 • No analytics, no telemetry, no tracking, no ads, no account
@@ -178,6 +178,12 @@ No account needed; the extension has no server. It needs one AI backend.
 2. Otherwise: gear icon > Gemini or Groq (free API key) > paste key > Test connection > Save, then step 1.
 Settings > Built-in > Check availability tells which applies. Temporary key on request: minglau0315@gmail.com
 ```
+
+The block above is at the 500-character limit, so this line is not part of it. Say it in the
+review message or the privacy justification instead: the extension sets an uninstall URL
+(`chrome.runtime.setUninstallURL`) to an optional survey page on the project site, with only the
+version number in the URL. The extension sends nothing; the page sends answers only if the user
+presses Send. No extra permission is needed.
 
 ---
 
