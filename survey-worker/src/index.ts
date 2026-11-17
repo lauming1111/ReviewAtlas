@@ -7,8 +7,8 @@
  */
 
 /**
- * Reason slugs. Keep identical to the checkboxes in docs/uninstall.html (REASONS
- * there points back here).
+ * Reason slugs. Keep identical to the checkbox values in docs/uninstall.html (the
+ * comment above them points back here).
  */
 const REASONS = ['setup', 'quality', 'slow', 'broken', 'cost', 'privacy', 'once', 'switched', 'other'];
 

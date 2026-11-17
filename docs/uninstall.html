@@ -33,6 +33,7 @@
   <form id="survey" class="survey" novalidate>
     <fieldset>
       <legend>What made you remove it? <small>Optional &middot; pick any</small></legend>
+      <!-- Values mirror REASONS in survey-worker/src/index.ts. Keep them identical. -->
       <div class="chips">
         <label class="chip"><input type="checkbox" name="reasons" value="setup" /><span>Couldn&rsquo;t get it set up</span></label>
         <label class="chip"><input type="checkbox" name="reasons" value="quality" /><span>Summaries not useful</span></label>
@@ -57,14 +58,13 @@
       <p class="fine">Sends only your choices, your note and the version number<span id="version-note" hidden> (<span id="version"></span>)</span>. No IP address, email or identifier is stored. <a href="privacy.html#uninstall-survey">Privacy policy</a></p>
     </div>
     <div id="status" class="status" role="status"></div>
-    <noscript><p class="fine">This form needs JavaScript. You can email your answer to
-      <a href="mailto:minglau0315@gmail.com">minglau0315@gmail.com</a> instead.</p></noscript>
+    <noscript><p class="fine">This form needs JavaScript to send.</p></noscript>
   </form>
 
   <div id="done" class="done callout good" role="status" hidden style="margin-top:30px">
     <h2>Thanks. That helps.</h2>
     <p>Every answer gets read, and the common ones decide what gets fixed next.</p>
-    <p>Hit a bug on the way out? <a href="https://github.com/lauming1111/ReviewAtlas/issues">Open an issue on GitHub</a> or email <a href="mailto:minglau0315@gmail.com">minglau0315@gmail.com</a>. Including the provider and model you used helps a lot.</p>
+    <p>Hit a bug on the way out? <a href="https://github.com/lauming1111/ReviewAtlas/issues">Open an issue on GitHub</a>. Including the provider and model you used helps a lot.</p>
   </div>
 
 </article>
@@ -83,20 +83,7 @@
 </footer>
 
 <script>
-  // REASONS mirrors the allow-list in survey-worker/src/index.ts (REASONS there). Keep them identical.
-  var REASONS = {
-    setup: 'Couldn’t get it set up',
-    quality: 'Summaries not useful',
-    slow: 'Too slow',
-    broken: 'Didn’t work on my page',
-    cost: 'AI provider cost too much',
-    privacy: 'Privacy worry',
-    once: 'Only needed it once',
-    switched: 'Switched to another tool',
-    other: 'Something else'
-  };
   var VERSION_PATTERN = /^\d{1,3}(\.\d{1,3}){0,3}$/;
-  var MAIL = 'minglau0315@gmail.com';
   // The survey Worker in survey-worker/. Local runs talk to `wrangler dev`.
   var ENDPOINT = location.hostname === 'localhost'
     ? 'http://localhost:8787/'
@@ -130,17 +117,8 @@
   form.addEventListener('change', refresh);
   refresh();
 
-  function mailtoHref(reasons, text) {
-    var lines = ['Reasons: ' + (reasons.length ? reasons.map(function (r) { return REASONS[r]; }).join('; ') : '(none)')];
-    if (text) lines.push('', text);
-    if (version) lines.push('', 'Version: ' + version);
-    return 'mailto:' + MAIL +
-      '?subject=' + encodeURIComponent('Review Atlas uninstall' + (version ? ' (' + version + ')' : '')) +
-      '&body=' + encodeURIComponent(lines.join('\n'));
-  }
-
   // A failure stays beside the form so the answer is never lost. Success replaces the form.
-  function showFallback(reasons, text) {
+  function showFallback() {
     statusBox.textContent = '';
     var box = document.createElement('div');
     box.className = 'callout warn';
@@ -149,13 +127,8 @@
     strong.style.color = 'var(--text)';
     strong.textContent = 'That didn’t go through.';
     p.appendChild(strong);
-    p.appendChild(document.createTextNode(' Your answer is still here. You can try again, or send it by email instead.'));
-    var a = document.createElement('a');
-    a.className = 'btn btn-secondary';
-    a.href = mailtoHref(reasons, text);
-    a.textContent = 'Send by email';
+    p.appendChild(document.createTextNode(' Your answer is still here, so you can try again in a moment.'));
     box.appendChild(p);
-    box.appendChild(a);
     statusBox.appendChild(box);
   }
 
@@ -195,11 +168,11 @@
         form.hidden = true;
         done.hidden = false;
       } else {
-        showFallback(reasons, text);
+        showFallback();
         finish();
       }
     }).catch(function () {
-      showFallback(reasons, text);
+      showFallback();
       finish();
     }).then(function () { clearTimeout(timer); });
   });
