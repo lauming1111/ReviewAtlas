@@ -9,6 +9,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.6.0] — 2026-11-17
+
 ### Added
 - **An optional survey when you remove the extension.** Chrome opens a short page on the project site asking what made you remove it. Every question is optional, nothing is sent unless you press Send, and the extension itself still sends nothing. The address Chrome opens carries only the version number. Answers go to a small endpoint we run on Cloudflare, which stores the reasons, your note, the version and the date, and no IP address, email or identifier
 
